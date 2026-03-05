@@ -1,0 +1,1494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>NULL_X</title>
+    <style>
+      :root {
+          --bg-dark: #05070a;
+          --nav-bg: #161b22;
+          --border-muted: #30363d;
+          --accent-blue: #58a6ff;
+          --text-main: #c9d1d9;
+          --text-muted: #8b949e;
+          --danger-red: #da3633;
+          --slot-inner: rgba(22, 27, 34, 0.8);
+      }
+  
+      @keyframes rgbBorder {
+          0% { border-color: #ff0000; box-shadow: 0 0 10px rgba(255, 0, 0, 0.4); }
+          33% { border-color: #00ff00; box-shadow: 0 0 10px rgba(0, 255, 0, 0.4); }
+          66% { border-color: #0000ff; box-shadow: 0 0 10px rgba(0, 0, 255, 0.4); }
+          100% { border-color: #ff0000; box-shadow: 0 0 10px rgba(255, 0, 0, 0.4); }
+      }
+
+      @keyframes unlockContent {
+          0% { opacity: 0; transform: scale(0.95); filter: blur(10px); }
+          100% { opacity: 1; transform: scale(1); filter: blur(0); }
+      }
+
+      body {
+          margin: 0;
+          background-color: #05070a;
+          background-image: 
+              radial-gradient(circle at 20% 40%, rgba(0, 162, 255, 0.15), transparent 50%),
+              radial-gradient(circle at 80% 60%, rgba(170, 0, 255, 0.15), transparent 50%),
+              url("data:image/svg+xml,%3Csvg width='60' height='104' viewBox='0 0 60 104' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l26 15v30l-26 15-26-15V15zM30 104l26-15V59l-26-15-26 15v30z' stroke='%2338bdf8' stroke-opacity='0.15' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");
+          background-attachment: fixed;
+          color: var(--text-main);
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+          display: flex;
+          flex-direction: column;
+          min-height: 100vh;
+      }
+
+      header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 20px 40px;
+          background: var(--nav-bg);
+          border-bottom: 2px solid var(--border-muted);
+          animation: rgbBorder 8s infinite linear;
+      }
+
+      .logo { height: 45px; object-fit: contain; background: white; padding: 2px; border-radius: 4px; }
+
+      .search-container input {
+          background: var(--bg-dark);
+          border: 2px solid var(--border-muted);
+          color: white;
+          padding: 10px 20px;
+          border-radius: 6px;
+          width: 350px;
+          outline: none;
+          animation: rgbBorder 8s infinite linear;
+      }
+
+      .main-content { padding: 40px; flex: 1; }
+
+      .section-label {
+          text-align: center;
+          color: var(--text-muted);
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+          margin-bottom: 20px;
+      }
+
+      .game-grid {
+          display: grid;
+          grid-template-columns: repeat(5, 140px); 
+          gap: 25px;
+          width: 800px; 
+          margin: 0 auto 50px; 
+          justify-content: center;
+      }
+
+      .slot { width: 140px; display: flex; flex-direction: column; position: relative; }
+      
+      .box { 
+          width: 100%; 
+          aspect-ratio: 1; 
+          background: var(--slot-inner); 
+          border: 2px solid var(--border-muted); 
+          border-radius: 8px; 
+          margin-bottom: 12px; 
+          animation: rgbBorder 8s infinite linear;
+          transition: 0.2s;
+      }
+
+      .card-star {
+          position: absolute;
+          top: -20px;
+          left: 50%;
+          transform: translateX(-50%);
+          font-size: 18px;
+          color: rgba(255, 255, 255, 0.2);
+          cursor: pointer;
+          z-index: 10;
+          transition: color 0.2s;
+      }
+      .card-star.active { color: #ffca28; }
+
+      .slot span { font-size: 11px; color: var(--text-muted); text-align: center; font-weight: bold; }
+
+      /* FIXED: Admin Container Normal Size Logic */
+      .admin-container {
+          position: relative;
+          width: 800px;
+          min-height: 250px; /* Ensures it doesn't shrink to nothing */
+          margin: 80px auto 0;
+          padding: 60px 20px;
+          border-radius: 16px;
+          background: rgba(13, 17, 23, 0.8);
+          border: 4px solid #da3633;
+          animation: rgbBorder 8s infinite linear;
+          overflow: hidden;
+      }
+
+      .admin-overlay {
+          position: absolute;
+          top: 0; left: 0; width: 100%; height: 100%;
+          background: rgba(13, 17, 23, 0.95);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 20;
+          transition: opacity 0.5s ease;
+      }
+
+      .admin-content {
+          display: none;
+          opacity: 0;
+          justify-content: center; 
+          width: 100%;
+      }
+
+      .unlocked .admin-overlay { opacity: 0; pointer-events: none; }
+      .unlocked .admin-content { 
+          display: grid; 
+          animation: unlockContent 0.8s forwards ease-out; 
+      }
+
+      .pin-input { 
+          background: var(--bg-dark); 
+          border: 2px solid var(--border-muted); 
+          color: white; 
+          padding: 12px; 
+          border-radius: 6px; 
+          text-align: center; 
+          width: 180px; 
+          font-size: 22px;
+          animation: rgbBorder 8s infinite linear;
+      }
+
+      footer { text-align: center; padding: 40px; color: var(--text-muted); font-size: 12px; }
+
+      .backdoor-box {
+          position: fixed;
+          bottom: 10px;
+          right: 10px;
+          width: 15px;
+          height: 15px;
+          background: rgba(28, 33, 40, 0.2);
+          border: 1px solid #30363d;
+          border-radius: 3px;
+          z-index: 9999;
+          cursor: pointer;
+      }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="https://i.ibb.co/Y7v5KkF3/NX-2.png" alt="Logo" class="logo">
+        <div style="display: flex; gap: 15px; align-items: center;">
+            <div class="search-container">
+                <input type="text" id="gameSearch" placeholder="Search Null_X...">
+            </div>
+            <button onclick="document.getElementById('settingsModal').style.display='block'" style="background: var(--bg-dark); color: white; border: 2px solid var(--border-muted); font-size: 20px; padding: 6px 12px; border-radius: 6px; cursor: pointer; animation: rgbBorder 8s infinite linear;">⚙️</button>
+        </div>
+    </header>
+
+    <div class="main-content">
+        
+        <div class="section-label" id="fav-label" style="display:none;">Favorites</div>
+        <div class="game-grid" id="favoritesGrid"></div>
+
+        <div class="section-label">ALL GAMES</div>
+        
+        <div class="game-grid" id="mainGrid">
+            <div class="slot" id="slot-001"><span class="card-star" onclick="toggleStar(this, 'slot-001', 'GAME 001')">★</span><div class="box"></div><span>GAME 001</span></div>
+            <div class="slot" id="slot-002"><span class="card-star" onclick="toggleStar(this, 'slot-002', 'GAME 002')">★</span><div class="box"></div><span>GAME 002</span></div>
+            <div class="slot" id="slot-003"><span class="card-star" onclick="toggleStar(this, 'slot-003', 'GAME 003')">★</span><div class="box"></div><span>GAME 003</span></div>
+            <div class="slot" id="slot-004"><span class="card-star" onclick="toggleStar(this, 'slot-004', 'GAME 004')">★</span><div class="box"></div><span>GAME 004</span></div>
+            <div class="slot" id="slot-005"><span class="card-star" onclick="toggleStar(this, 'slot-005', 'GAME 005')">★</span><div class="box"></div><span>GAME 005</span></div>
+            <div class="slot" id="slot-006"><span class="card-star" onclick="toggleStar(this, 'slot-006', 'GAME 006')">★</span><div class="box"></div><span>GAME 006</span></div>
+            <div class="slot" id="slot-007"><span class="card-star" onclick="toggleStar(this, 'slot-007', 'GAME 007')">★</span><div class="box"></div><span>GAME 007</span></div>
+            <div class="slot" id="slot-008"><span class="card-star" onclick="toggleStar(this, 'slot-008', 'GAME 008')">★</span><div class="box"></div><span>GAME 008</span></div>
+            <div class="slot" id="slot-009"><span class="card-star" onclick="toggleStar(this, 'slot-009', 'GAME 009')">★</span><div class="box"></div><span>GAME 009</span></div>
+            <div class="slot" id="slot-010"><span class="card-star" onclick="toggleStar(this, 'slot-010', 'GAME 010')">★</span><div class="box"></div><span>GAME 010</span></div>
+            <div class="slot" id="slot-011"><span class="card-star" onclick="toggleStar(this, 'slot-011', 'GAME 011')">★</span><div class="box"></div><span>GAME 011</span></div>
+            <div class="slot" id="slot-012"><span class="card-star" onclick="toggleStar(this, 'slot-012', 'GAME 012')">★</span><div class="box"></div><span>GAME 012</span></div>
+            <div class="slot" id="slot-013"><span class="card-star" onclick="toggleStar(this, 'slot-013', 'GAME 013')">★</span><div class="box"></div><span>GAME 013</span></div>
+            <div class="slot" id="slot-014"><span class="card-star" onclick="toggleStar(this, 'slot-014', 'GAME 014')">★</span><div class="box"></div><span>GAME 014</span></div>
+            <div class="slot" id="slot-015"><span class="card-star" onclick="toggleStar(this, 'slot-015', 'GAME 015')">★</span><div class="box"></div><span>GAME 015</span></div>
+            <div class="slot" id="slot-016"><span class="card-star" onclick="toggleStar(this, 'slot-016', 'GAME 016')">★</span><div class="box"></div><span>GAME 016</span></div>
+            <div class="slot" id="slot-017"><span class="card-star" onclick="toggleStar(this, 'slot-017', 'GAME 017')">★</span><div class="box"></div><span>GAME 017</span></div>
+            <div class="slot" id="slot-018"><span class="card-star" onclick="toggleStar(this, 'slot-018', 'GAME 018')">★</span><div class="box"></div><span>GAME 018</span></div>
+            <div class="slot" id="slot-019"><span class="card-star" onclick="toggleStar(this, 'slot-019', 'GAME 019')">★</span><div class="box"></div><span>GAME 019</span></div>
+            <div class="slot" id="slot-020"><span class="card-star" onclick="toggleStar(this, 'slot-020', 'GAME 020')">★</span><div class="box"></div><span>GAME 020</span></div>
+            <div class="slot" id="slot-021"><span class="card-star" onclick="toggleStar(this, 'slot-021', 'GAME 021')">★</span><div class="box"></div><span>GAME 021</span></div>
+            <div class="slot" id="slot-022"><span class="card-star" onclick="toggleStar(this, 'slot-022', 'GAME 022')">★</span><div class="box"></div><span>GAME 022</span></div>
+            <div class="slot" id="slot-023"><span class="card-star" onclick="toggleStar(this, 'slot-023', 'GAME 023')">★</span><div class="box"></div><span>GAME 023</span></div>
+            <div class="slot" id="slot-024"><span class="card-star" onclick="toggleStar(this, 'slot-024', 'GAME 024')">★</span><div class="box"></div><span>GAME 024</span></div>
+            <div class="slot" id="slot-025"><span class="card-star" onclick="toggleStar(this, 'slot-025', 'GAME 025')">★</span><div class="box"></div><span>GAME 025</span></div>
+            <div class="slot" id="slot-026"><span class="card-star" onclick="toggleStar(this, 'slot-026', 'GAME 026')">★</span><div class="box"></div><span>GAME 026</span></div>
+            <div class="slot" id="slot-027"><span class="card-star" onclick="toggleStar(this, 'slot-027', 'GAME 027')">★</span><div class="box"></div><span>GAME 027</span></div>
+            <div class="slot" id="slot-028"><span class="card-star" onclick="toggleStar(this, 'slot-028', 'GAME 028')">★</span><div class="box"></div><span>GAME 028</span></div>
+            <div class="slot" id="slot-029"><span class="card-star" onclick="toggleStar(this, 'slot-029', 'GAME 029')">★</span><div class="box"></div><span>GAME 029</span></div>
+            <div class="slot" id="slot-030"><span class="card-star" onclick="toggleStar(this, 'slot-030', 'GAME 030')">★</span><div class="box"></div><span>GAME 030</span></div>
+            <div class="slot" id="slot-031"><span class="card-star" onclick="toggleStar(this, 'slot-031', 'GAME 031')">★</span><div class="box"></div><span>GAME 031</span></div>
+            <div class="slot" id="slot-032"><span class="card-star" onclick="toggleStar(this, 'slot-032', 'GAME 032')">★</span><div class="box"></div><span>GAME 032</span></div>
+            <div class="slot" id="slot-033"><span class="card-star" onclick="toggleStar(this, 'slot-033', 'GAME 033')">★</span><div class="box"></div><span>GAME 033</span></div>
+            <div class="slot" id="slot-034"><span class="card-star" onclick="toggleStar(this, 'slot-034', 'GAME 034')">★</span><div class="box"></div><span>GAME 034</span></div>
+            <div class="slot" id="slot-035"><span class="card-star" onclick="toggleStar(this, 'slot-035', 'GAME 035')">★</span><div class="box"></div><span>GAME 035</span></div>
+            <div class="slot" id="slot-036"><span class="card-star" onclick="toggleStar(this, 'slot-036', 'GAME 036')">★</span><div class="box"></div><span>GAME 036</span></div>
+            <div class="slot" id="slot-037"><span class="card-star" onclick="toggleStar(this, 'slot-037', 'GAME 037')">★</span><div class="box"></div><span>GAME 037</span></div>
+            <div class="slot" id="slot-038"><span class="card-star" onclick="toggleStar(this, 'slot-038', 'GAME 038')">★</span><div class="box"></div><span>GAME 038</span></div>
+            <div class="slot" id="slot-039"><span class="card-star" onclick="toggleStar(this, 'slot-039', 'GAME 039')">★</span><div class="box"></div><span>GAME 039</span></div>
+            <div class="slot" id="slot-040"><span class="card-star" onclick="toggleStar(this, 'slot-040', 'GAME 040')">★</span><div class="box"></div><span>GAME 040</span></div>
+            <div class="slot" id="slot-041"><span class="card-star" onclick="toggleStar(this, 'slot-041', 'GAME 041')">★</span><div class="box"></div><span>GAME 041</span></div>
+            <div class="slot" id="slot-042"><span class="card-star" onclick="toggleStar(this, 'slot-042', 'GAME 042')">★</span><div class="box"></div><span>GAME 042</span></div>
+            <div class="slot" id="slot-043"><span class="card-star" onclick="toggleStar(this, 'slot-043', 'GAME 043')">★</span><div class="box"></div><span>GAME 043</span></div>
+            <div class="slot" id="slot-044"><span class="card-star" onclick="toggleStar(this, 'slot-044', 'GAME 044')">★</span><div class="box"></div><span>GAME 044</span></div>
+            <div class="slot" id="slot-045"><span class="card-star" onclick="toggleStar(this, 'slot-045', 'GAME 045')">★</span><div class="box"></div><span>GAME 045</span></div>
+            <div class="slot" id="slot-046"><span class="card-star" onclick="toggleStar(this, 'slot-046', 'GAME 046')">★</span><div class="box"></div><span>GAME 046</span></div>
+            <div class="slot" id="slot-047"><span class="card-star" onclick="toggleStar(this, 'slot-047', 'GAME 047')">★</span><div class="box"></div><span>GAME 047</span></div>
+            <div class="slot" id="slot-048"><span class="card-star" onclick="toggleStar(this, 'slot-048', 'GAME 048')">★</span><div class="box"></div><span>GAME 048</span></div>
+            <div class="slot" id="slot-049"><span class="card-star" onclick="toggleStar(this, 'slot-049', 'GAME 049')">★</span><div class="box"></div><span>GAME 049</span></div>
+            <div class="slot" id="slot-050"><span class="card-star" onclick="toggleStar(this, 'slot-050', 'GAME 050')">★</span><div class="box"></div><span>GAME 050</span></div>
+          <div class="slot" id="slot-051"><span class="card-star" onclick="toggleStar(this, 'slot-051', 'GAME 051')">★</span><div class="box"></div><span>GAME 051</span></div>
+            <div class="slot" id="slot-052"><span class="card-star" onclick="toggleStar(this, 'slot-052', 'GAME 052')">★</span><div class="box"></div><span>GAME 052</span></div>
+            <div class="slot" id="slot-053"><span class="card-star" onclick="toggleStar(this, 'slot-053', 'GAME 053')">★</span><div class="box"></div><span>GAME 053</span></div>
+            <div class="slot" id="slot-054"><span class="card-star" onclick="toggleStar(this, 'slot-054', 'GAME 054')">★</span><div class="box"></div><span>GAME 054</span></div>
+            <div class="slot" id="slot-055"><span class="card-star" onclick="toggleStar(this, 'slot-055', 'GAME 055')">★</span><div class="box"></div><span>GAME 055</span></div>
+            <div class="slot" id="slot-056"><span class="card-star" onclick="toggleStar(this, 'slot-056', 'GAME 056')">★</span><div class="box"></div><span>GAME 056</span></div>
+            <div class="slot" id="slot-057"><span class="card-star" onclick="toggleStar(this, 'slot-057', 'GAME 057')">★</span><div class="box"></div><span>GAME 057</span></div>
+            <div class="slot" id="slot-058"><span class="card-star" onclick="toggleStar(this, 'slot-058', 'GAME 058')">★</span><div class="box"></div><span>GAME 058</span></div>
+            <div class="slot" id="slot-059"><span class="card-star" onclick="toggleStar(this, 'slot-059', 'GAME 059')">★</span><div class="box"></div><span>GAME 059</span></div>
+            <div class="slot" id="slot-060"><span class="card-star" onclick="toggleStar(this, 'slot-060', 'GAME 060')">★</span><div class="box"></div><span>GAME 060</span></div>
+            <div class="slot" id="slot-061"><span class="card-star" onclick="toggleStar(this, 'slot-061', 'GAME 061')">★</span><div class="box"></div><span>GAME 061</span></div>
+            <div class="slot" id="slot-062"><span class="card-star" onclick="toggleStar(this, 'slot-062', 'GAME 062')">★</span><div class="box"></div><span>GAME 062</span></div>
+            <div class="slot" id="slot-063"><span class="card-star" onclick="toggleStar(this, 'slot-063', 'GAME 063')">★</span><div class="box"></div><span>GAME 063</span></div>
+            <div class="slot" id="slot-064"><span class="card-star" onclick="toggleStar(this, 'slot-064', 'GAME 064')">★</span><div class="box"></div><span>GAME 064</span></div>
+            <div class="slot" id="slot-065"><span class="card-star" onclick="toggleStar(this, 'slot-065', 'GAME 065')">★</span><div class="box"></div><span>GAME 065</span></div>
+            <div class="slot" id="slot-066"><span class="card-star" onclick="toggleStar(this, 'slot-066', 'GAME 066')">★</span><div class="box"></div><span>GAME 066</span></div>
+            <div class="slot" id="slot-067"><span class="card-star" onclick="toggleStar(this, 'slot-067', 'GAME 067')">★</span><div class="box"></div><span>GAME 067</span></div>
+            <div class="slot" id="slot-068"><span class="card-star" onclick="toggleStar(this, 'slot-068', 'GAME 068')">★</span><div class="box"></div><span>GAME 068</span></div>
+            <div class="slot" id="slot-069"><span class="card-star" onclick="toggleStar(this, 'slot-069', 'GAME 069')">★</span><div class="box"></div><span>GAME 069</span></div>
+            <div class="slot" id="slot-070"><span class="card-star" onclick="toggleStar(this, 'slot-070', 'GAME 070')">★</span><div class="box"></div><span>GAME 070</span></div>
+            <div class="slot" id="slot-071"><span class="card-star" onclick="toggleStar(this, 'slot-071', 'GAME 071')">★</span><div class="box"></div><span>GAME 071</span></div>
+            <div class="slot" id="slot-072"><span class="card-star" onclick="toggleStar(this, 'slot-072', 'GAME 072')">★</span><div class="box"></div><span>GAME 072</span></div>
+            <div class="slot" id="slot-073"><span class="card-star" onclick="toggleStar(this, 'slot-073', 'GAME 073')">★</span><div class="box"></div><span>GAME 073</span></div>
+            <div class="slot" id="slot-074"><span class="card-star" onclick="toggleStar(this, 'slot-074', 'GAME 074')">★</span><div class="box"></div><span>GAME 074</span></div>
+            <div class="slot" id="slot-075"><span class="card-star" onclick="toggleStar(this, 'slot-075', 'GAME 075')">★</span><div class="box"></div><span>GAME 075</span></div>
+            <div class="slot" id="slot-076"><span class="card-star" onclick="toggleStar(this, 'slot-076', 'GAME 076')">★</span><div class="box"></div><span>GAME 076</span></div>
+            <div class="slot" id="slot-077"><span class="card-star" onclick="toggleStar(this, 'slot-077', 'GAME 077')">★</span><div class="box"></div><span>GAME 077</span></div>
+            <div class="slot" id="slot-078"><span class="card-star" onclick="toggleStar(this, 'slot-078', 'GAME 078')">★</span><div class="box"></div><span>GAME 078</span></div>
+            <div class="slot" id="slot-079"><span class="card-star" onclick="toggleStar(this, 'slot-079', 'GAME 079')">★</span><div class="box"></div><span>GAME 079</span></div>
+            <div class="slot" id="slot-080"><span class="card-star" onclick="toggleStar(this, 'slot-080', 'GAME 080')">★</span><div class="box"></div><span>GAME 080</span></div>
+            <div class="slot" id="slot-081"><span class="card-star" onclick="toggleStar(this, 'slot-081', 'GAME 081')">★</span><div class="box"></div><span>GAME 081</span></div>
+            <div class="slot" id="slot-082"><span class="card-star" onclick="toggleStar(this, 'slot-082', 'GAME 082')">★</span><div class="box"></div><span>GAME 082</span></div>
+            <div class="slot" id="slot-083"><span class="card-star" onclick="toggleStar(this, 'slot-083', 'GAME 083')">★</span><div class="box"></div><span>GAME 083</span></div>
+            <div class="slot" id="slot-084"><span class="card-star" onclick="toggleStar(this, 'slot-084', 'GAME 084')">★</span><div class="box"></div><span>GAME 084</span></div>
+            <div class="slot" id="slot-085"><span class="card-star" onclick="toggleStar(this, 'slot-085', 'GAME 085')">★</span><div class="box"></div><span>GAME 085</span></div>
+            <div class="slot" id="slot-086"><span class="card-star" onclick="toggleStar(this, 'slot-086', 'GAME 086')">★</span><div class="box"></div><span>GAME 086</span></div>
+            <div class="slot" id="slot-087"><span class="card-star" onclick="toggleStar(this, 'slot-087', 'GAME 087')">★</span><div class="box"></div><span>GAME 087</span></div>
+            <div class="slot" id="slot-088"><span class="card-star" onclick="toggleStar(this, 'slot-088', 'GAME 088')">★</span><div class="box"></div><span>GAME 088</span></div>
+            <div class="slot" id="slot-089"><span class="card-star" onclick="toggleStar(this, 'slot-089', 'GAME 089')">★</span><div class="box"></div><span>GAME 089</span></div>
+            <div class="slot" id="slot-090"><span class="card-star" onclick="toggleStar(this, 'slot-090', 'GAME 090')">★</span><div class="box"></div><span>GAME 090</span></div>
+            <div class="slot" id="slot-091"><span class="card-star" onclick="toggleStar(this, 'slot-091', 'GAME 091')">★</span><div class="box"></div><span>GAME 091</span></div>
+            <div class="slot" id="slot-092"><span class="card-star" onclick="toggleStar(this, 'slot-092', 'GAME 092')">★</span><div class="box"></div><span>GAME 092</span></div>
+            <div class="slot" id="slot-093"><span class="card-star" onclick="toggleStar(this, 'slot-093', 'GAME 093')">★</span><div class="box"></div><span>GAME 093</span></div>
+            <div class="slot" id="slot-094"><span class="card-star" onclick="toggleStar(this, 'slot-094', 'GAME 094')">★</span><div class="box"></div><span>GAME 094</span></div>
+            <div class="slot" id="slot-095"><span class="card-star" onclick="toggleStar(this, 'slot-095', 'GAME 095')">★</span><div class="box"></div><span>GAME 095</span></div>
+            <div class="slot" id="slot-096"><span class="card-star" onclick="toggleStar(this, 'slot-096', 'GAME 096')">★</span><div class="box"></div><span>GAME 096</span></div>
+            <div class="slot" id="slot-097"><span class="card-star" onclick="toggleStar(this, 'slot-097', 'GAME 097')">★</span><div class="box"></div><span>GAME 097</span></div>
+            <div class="slot" id="slot-098"><span class="card-star" onclick="toggleStar(this, 'slot-098', 'GAME 098')">★</span><div class="box"></div><span>GAME 098</span></div>
+            <div class="slot" id="slot-099"><span class="card-star" onclick="toggleStar(this, 'slot-099', 'GAME 099')">★</span><div class="box"></div><span>GAME 099</span></div>
+            <div class="slot" id="slot-100"><span class="card-star" onclick="toggleStar(this, 'slot-100', 'GAME 100')">★</span><div class="box"></div><span>GAME 100</span></div>
+          <div class="slot" id="slot-101"><span class="card-star" onclick="toggleStar(this, 'slot-101', 'GAME 101')">★</span><div class="box"></div><span>GAME 101</span></div>
+            <div class="slot" id="slot-102"><span class="card-star" onclick="toggleStar(this, 'slot-102', 'GAME 102')">★</span><div class="box"></div><span>GAME 102</span></div>
+            <div class="slot" id="slot-103"><span class="card-star" onclick="toggleStar(this, 'slot-103', 'GAME 103')">★</span><div class="box"></div><span>GAME 103</span></div>
+            <div class="slot" id="slot-104"><span class="card-star" onclick="toggleStar(this, 'slot-104', 'GAME 104')">★</span><div class="box"></div><span>GAME 104</span></div>
+            <div class="slot" id="slot-105"><span class="card-star" onclick="toggleStar(this, 'slot-105', 'GAME 105')">★</span><div class="box"></div><span>GAME 105</span></div>
+            <div class="slot" id="slot-106"><span class="card-star" onclick="toggleStar(this, 'slot-106', 'GAME 106')">★</span><div class="box"></div><span>GAME 106</span></div>
+            <div class="slot" id="slot-107"><span class="card-star" onclick="toggleStar(this, 'slot-107', 'GAME 107')">★</span><div class="box"></div><span>GAME 107</span></div>
+            <div class="slot" id="slot-108"><span class="card-star" onclick="toggleStar(this, 'slot-108', 'GAME 108')">★</span><div class="box"></div><span>GAME 108</span></div>
+            <div class="slot" id="slot-109"><span class="card-star" onclick="toggleStar(this, 'slot-109', 'GAME 109')">★</span><div class="box"></div><span>GAME 109</span></div>
+            <div class="slot" id="slot-110"><span class="card-star" onclick="toggleStar(this, 'slot-110', 'GAME 110')">★</span><div class="box"></div><span>GAME 110</span></div>
+            <div class="slot" id="slot-111"><span class="card-star" onclick="toggleStar(this, 'slot-111', 'GAME 111')">★</span><div class="box"></div><span>GAME 111</span></div>
+            <div class="slot" id="slot-112"><span class="card-star" onclick="toggleStar(this, 'slot-112', 'GAME 112')">★</span><div class="box"></div><span>GAME 112</span></div>
+            <div class="slot" id="slot-113"><span class="card-star" onclick="toggleStar(this, 'slot-113', 'GAME 113')">★</span><div class="box"></div><span>GAME 113</span></div>
+            <div class="slot" id="slot-114"><span class="card-star" onclick="toggleStar(this, 'slot-114', 'GAME 114')">★</span><div class="box"></div><span>GAME 114</span></div>
+            <div class="slot" id="slot-115"><span class="card-star" onclick="toggleStar(this, 'slot-115', 'GAME 115')">★</span><div class="box"></div><span>GAME 115</span></div>
+            <div class="slot" id="slot-116"><span class="card-star" onclick="toggleStar(this, 'slot-116', 'GAME 116')">★</span><div class="box"></div><span>GAME 116</span></div>
+            <div class="slot" id="slot-117"><span class="card-star" onclick="toggleStar(this, 'slot-117', 'GAME 117')">★</span><div class="box"></div><span>GAME 117</span></div>
+            <div class="slot" id="slot-118"><span class="card-star" onclick="toggleStar(this, 'slot-118', 'GAME 118')">★</span><div class="box"></div><span>GAME 118</span></div>
+            <div class="slot" id="slot-119"><span class="card-star" onclick="toggleStar(this, 'slot-119', 'GAME 119')">★</span><div class="box"></div><span>GAME 119</span></div>
+            <div class="slot" id="slot-120"><span class="card-star" onclick="toggleStar(this, 'slot-120', 'GAME 120')">★</span><div class="box"></div><span>GAME 120</span></div>
+            <div class="slot" id="slot-121"><span class="card-star" onclick="toggleStar(this, 'slot-121', 'GAME 121')">★</span><div class="box"></div><span>GAME 121</span></div>
+            <div class="slot" id="slot-122"><span class="card-star" onclick="toggleStar(this, 'slot-122', 'GAME 122')">★</span><div class="box"></div><span>GAME 122</span></div>
+            <div class="slot" id="slot-123"><span class="card-star" onclick="toggleStar(this, 'slot-123', 'GAME 123')">★</span><div class="box"></div><span>GAME 123</span></div>
+            <div class="slot" id="slot-124"><span class="card-star" onclick="toggleStar(this, 'slot-124', 'GAME 124')">★</span><div class="box"></div><span>GAME 124</span></div>
+            <div class="slot" id="slot-125"><span class="card-star" onclick="toggleStar(this, 'slot-125', 'GAME 125')">★</span><div class="box"></div><span>GAME 125</span></div>
+            <div class="slot" id="slot-126"><span class="card-star" onclick="toggleStar(this, 'slot-126', 'GAME 126')">★</span><div class="box"></div><span>GAME 126</span></div>
+            <div class="slot" id="slot-127"><span class="card-star" onclick="toggleStar(this, 'slot-127', 'GAME 127')">★</span><div class="box"></div><span>GAME 127</span></div>
+            <div class="slot" id="slot-128"><span class="card-star" onclick="toggleStar(this, 'slot-128', 'GAME 128')">★</span><div class="box"></div><span>GAME 128</span></div>
+            <div class="slot" id="slot-129"><span class="card-star" onclick="toggleStar(this, 'slot-129', 'GAME 129')">★</span><div class="box"></div><span>GAME 129</span></div>
+            <div class="slot" id="slot-130"><span class="card-star" onclick="toggleStar(this, 'slot-130', 'GAME 130')">★</span><div class="box"></div><span>GAME 130</span></div>
+            <div class="slot" id="slot-131"><span class="card-star" onclick="toggleStar(this, 'slot-131', 'GAME 131')">★</span><div class="box"></div><span>GAME 131</span></div>
+            <div class="slot" id="slot-132"><span class="card-star" onclick="toggleStar(this, 'slot-132', 'GAME 132')">★</span><div class="box"></div><span>GAME 132</span></div>
+            <div class="slot" id="slot-133"><span class="card-star" onclick="toggleStar(this, 'slot-133', 'GAME 133')">★</span><div class="box"></div><span>GAME 133</span></div>
+            <div class="slot" id="slot-134"><span class="card-star" onclick="toggleStar(this, 'slot-134', 'GAME 134')">★</span><div class="box"></div><span>GAME 134</span></div>
+            <div class="slot" id="slot-135"><span class="card-star" onclick="toggleStar(this, 'slot-135', 'GAME 135')">★</span><div class="box"></div><span>GAME 135</span></div>
+            <div class="slot" id="slot-136"><span class="card-star" onclick="toggleStar(this, 'slot-136', 'GAME 136')">★</span><div class="box"></div><span>GAME 136</span></div>
+            <div class="slot" id="slot-137"><span class="card-star" onclick="toggleStar(this, 'slot-137', 'GAME 137')">★</span><div class="box"></div><span>GAME 137</span></div>
+            <div class="slot" id="slot-138"><span class="card-star" onclick="toggleStar(this, 'slot-138', 'GAME 138')">★</span><div class="box"></div><span>GAME 138</span></div>
+            <div class="slot" id="slot-139"><span class="card-star" onclick="toggleStar(this, 'slot-139', 'GAME 139')">★</span><div class="box"></div><span>GAME 139</span></div>
+            <div class="slot" id="slot-140"><span class="card-star" onclick="toggleStar(this, 'slot-140', 'GAME 140')">★</span><div class="box"></div><span>GAME 140</span></div>
+            <div class="slot" id="slot-141"><span class="card-star" onclick="toggleStar(this, 'slot-141', 'GAME 141')">★</span><div class="box"></div><span>GAME 141</span></div>
+            <div class="slot" id="slot-142"><span class="card-star" onclick="toggleStar(this, 'slot-142', 'GAME 142')">★</span><div class="box"></div><span>GAME 142</span></div>
+            <div class="slot" id="slot-143"><span class="card-star" onclick="toggleStar(this, 'slot-143', 'GAME 143')">★</span><div class="box"></div><span>GAME 143</span></div>
+            <div class="slot" id="slot-144"><span class="card-star" onclick="toggleStar(this, 'slot-144', 'GAME 144')">★</span><div class="box"></div><span>GAME 144</span></div>
+            <div class="slot" id="slot-145"><span class="card-star" onclick="toggleStar(this, 'slot-145', 'GAME 145')">★</span><div class="box"></div><span>GAME 145</span></div>
+            <div class="slot" id="slot-146"><span class="card-star" onclick="toggleStar(this, 'slot-146', 'GAME 146')">★</span><div class="box"></div><span>GAME 146</span></div>
+            <div class="slot" id="slot-147"><span class="card-star" onclick="toggleStar(this, 'slot-147', 'GAME 147')">★</span><div class="box"></div><span>GAME 147</span></div>
+            <div class="slot" id="slot-148"><span class="card-star" onclick="toggleStar(this, 'slot-148', 'GAME 148')">★</span><div class="box"></div><span>GAME 148</span></div>
+            <div class="slot" id="slot-149"><span class="card-star" onclick="toggleStar(this, 'slot-149', 'GAME 149')">★</span><div class="box"></div><span>GAME 149</span></div>
+            <div class="slot" id="slot-150"><span class="card-star" onclick="toggleStar(this, 'slot-150', 'GAME 150')">★</span><div class="box"></div><span>GAME 150</span></div>
+          <div class="slot" id="slot-151"><span class="card-star" onclick="toggleStar(this, 'slot-151', 'GAME 151')">★</span><div class="box"></div><span>GAME 151</span></div>
+            <div class="slot" id="slot-152"><span class="card-star" onclick="toggleStar(this, 'slot-152', 'GAME 152')">★</span><div class="box"></div><span>GAME 152</span></div>
+            <div class="slot" id="slot-153"><span class="card-star" onclick="toggleStar(this, 'slot-153', 'GAME 153')">★</span><div class="box"></div><span>GAME 153</span></div>
+            <div class="slot" id="slot-154"><span class="card-star" onclick="toggleStar(this, 'slot-154', 'GAME 154')">★</span><div class="box"></div><span>GAME 154</span></div>
+            <div class="slot" id="slot-155"><span class="card-star" onclick="toggleStar(this, 'slot-155', 'GAME 155')">★</span><div class="box"></div><span>GAME 155</span></div>
+            <div class="slot" id="slot-156"><span class="card-star" onclick="toggleStar(this, 'slot-156', 'GAME 156')">★</span><div class="box"></div><span>GAME 156</span></div>
+            <div class="slot" id="slot-157"><span class="card-star" onclick="toggleStar(this, 'slot-157', 'GAME 157')">★</span><div class="box"></div><span>GAME 157</span></div>
+            <div class="slot" id="slot-158"><span class="card-star" onclick="toggleStar(this, 'slot-158', 'GAME 158')">★</span><div class="box"></div><span>GAME 158</span></div>
+            <div class="slot" id="slot-159"><span class="card-star" onclick="toggleStar(this, 'slot-159', 'GAME 159')">★</span><div class="box"></div><span>GAME 159</span></div>
+            <div class="slot" id="slot-160"><span class="card-star" onclick="toggleStar(this, 'slot-160', 'GAME 160')">★</span><div class="box"></div><span>GAME 160</span></div>
+            <div class="slot" id="slot-161"><span class="card-star" onclick="toggleStar(this, 'slot-161', 'GAME 161')">★</span><div class="box"></div><span>GAME 161</span></div>
+            <div class="slot" id="slot-162"><span class="card-star" onclick="toggleStar(this, 'slot-162', 'GAME 162')">★</span><div class="box"></div><span>GAME 162</span></div>
+            <div class="slot" id="slot-163"><span class="card-star" onclick="toggleStar(this, 'slot-163', 'GAME 163')">★</span><div class="box"></div><span>GAME 163</span></div>
+            <div class="slot" id="slot-164"><span class="card-star" onclick="toggleStar(this, 'slot-164', 'GAME 164')">★</span><div class="box"></div><span>GAME 164</span></div>
+            <div class="slot" id="slot-165"><span class="card-star" onclick="toggleStar(this, 'slot-165', 'GAME 165')">★</span><div class="box"></div><span>GAME 165</span></div>
+            <div class="slot" id="slot-166"><span class="card-star" onclick="toggleStar(this, 'slot-166', 'GAME 166')">★</span><div class="box"></div><span>GAME 166</span></div>
+            <div class="slot" id="slot-167"><span class="card-star" onclick="toggleStar(this, 'slot-167', 'GAME 167')">★</span><div class="box"></div><span>GAME 167</span></div>
+            <div class="slot" id="slot-168"><span class="card-star" onclick="toggleStar(this, 'slot-168', 'GAME 168')">★</span><div class="box"></div><span>GAME 168</span></div>
+            <div class="slot" id="slot-169"><span class="card-star" onclick="toggleStar(this, 'slot-169', 'GAME 169')">★</span><div class="box"></div><span>GAME 169</span></div>
+            <div class="slot" id="slot-170"><span class="card-star" onclick="toggleStar(this, 'slot-170', 'GAME 170')">★</span><div class="box"></div><span>GAME 170</span></div>
+            <div class="slot" id="slot-171"><span class="card-star" onclick="toggleStar(this, 'slot-171', 'GAME 171')">★</span><div class="box"></div><span>GAME 171</span></div>
+            <div class="slot" id="slot-172"><span class="card-star" onclick="toggleStar(this, 'slot-172', 'GAME 172')">★</span><div class="box"></div><span>GAME 172</span></div>
+            <div class="slot" id="slot-173"><span class="card-star" onclick="toggleStar(this, 'slot-173', 'GAME 173')">★</span><div class="box"></div><span>GAME 173</span></div>
+            <div class="slot" id="slot-174"><span class="card-star" onclick="toggleStar(this, 'slot-174', 'GAME 174')">★</span><div class="box"></div><span>GAME 174</span></div>
+            <div class="slot" id="slot-175"><span class="card-star" onclick="toggleStar(this, 'slot-175', 'GAME 175')">★</span><div class="box"></div><span>GAME 175</span></div>
+            <div class="slot" id="slot-176"><span class="card-star" onclick="toggleStar(this, 'slot-176', 'GAME 176')">★</span><div class="box"></div><span>GAME 176</span></div>
+            <div class="slot" id="slot-177"><span class="card-star" onclick="toggleStar(this, 'slot-177', 'GAME 177')">★</span><div class="box"></div><span>GAME 177</span></div>
+            <div class="slot" id="slot-178"><span class="card-star" onclick="toggleStar(this, 'slot-178', 'GAME 178')">★</span><div class="box"></div><span>GAME 178</span></div>
+            <div class="slot" id="slot-179"><span class="card-star" onclick="toggleStar(this, 'slot-179', 'GAME 179')">★</span><div class="box"></div><span>GAME 179</span></div>
+            <div class="slot" id="slot-180"><span class="card-star" onclick="toggleStar(this, 'slot-180', 'GAME 180')">★</span><div class="box"></div><span>GAME 180</span></div>
+            <div class="slot" id="slot-181"><span class="card-star" onclick="toggleStar(this, 'slot-181', 'GAME 181')">★</span><div class="box"></div><span>GAME 181</span></div>
+            <div class="slot" id="slot-182"><span class="card-star" onclick="toggleStar(this, 'slot-182', 'GAME 182')">★</span><div class="box"></div><span>GAME 182</span></div>
+            <div class="slot" id="slot-183"><span class="card-star" onclick="toggleStar(this, 'slot-183', 'GAME 183')">★</span><div class="box"></div><span>GAME 183</span></div>
+            <div class="slot" id="slot-184"><span class="card-star" onclick="toggleStar(this, 'slot-184', 'GAME 184')">★</span><div class="box"></div><span>GAME 184</span></div>
+            <div class="slot" id="slot-185"><span class="card-star" onclick="toggleStar(this, 'slot-185', 'GAME 185')">★</span><div class="box"></div><span>GAME 185</span></div>
+            <div class="slot" id="slot-186"><span class="card-star" onclick="toggleStar(this, 'slot-186', 'GAME 186')">★</span><div class="box"></div><span>GAME 186</span></div>
+            <div class="slot" id="slot-187"><span class="card-star" onclick="toggleStar(this, 'slot-187', 'GAME 187')">★</span><div class="box"></div><span>GAME 187</span></div>
+            <div class="slot" id="slot-188"><span class="card-star" onclick="toggleStar(this, 'slot-188', 'GAME 188')">★</span><div class="box"></div><span>GAME 188</span></div>
+            <div class="slot" id="slot-189"><span class="card-star" onclick="toggleStar(this, 'slot-189', 'GAME 189')">★</span><div class="box"></div><span>GAME 189</span></div>
+            <div class="slot" id="slot-190"><span class="card-star" onclick="toggleStar(this, 'slot-190', 'GAME 190')">★</span><div class="box"></div><span>GAME 190</span></div>
+            <div class="slot" id="slot-191"><span class="card-star" onclick="toggleStar(this, 'slot-191', 'GAME 191')">★</span><div class="box"></div><span>GAME 191</span></div>
+            <div class="slot" id="slot-192"><span class="card-star" onclick="toggleStar(this, 'slot-192', 'GAME 192')">★</span><div class="box"></div><span>GAME 192</span></div>
+            <div class="slot" id="slot-193"><span class="card-star" onclick="toggleStar(this, 'slot-193', 'GAME 193')">★</span><div class="box"></div><span>GAME 193</span></div>
+            <div class="slot" id="slot-194"><span class="card-star" onclick="toggleStar(this, 'slot-194', 'GAME 194')">★</span><div class="box"></div><span>GAME 194</span></div>
+            <div class="slot" id="slot-195"><span class="card-star" onclick="toggleStar(this, 'slot-195', 'GAME 195')">★</span><div class="box"></div><span>GAME 195</span></div>
+            <div class="slot" id="slot-196"><span class="card-star" onclick="toggleStar(this, 'slot-196', 'GAME 196')">★</span><div class="box"></div><span>GAME 196</span></div>
+            <div class="slot" id="slot-197"><span class="card-star" onclick="toggleStar(this, 'slot-197', 'GAME 197')">★</span><div class="box"></div><span>GAME 197</span></div>
+            <div class="slot" id="slot-198"><span class="card-star" onclick="toggleStar(this, 'slot-198', 'GAME 198')">★</span><div class="box"></div><span>GAME 198</span></div>
+            <div class="slot" id="slot-199"><span class="card-star" onclick="toggleStar(this, 'slot-199', 'GAME 199')">★</span><div class="box"></div><span>GAME 199</span></div>
+            <div class="slot" id="slot-200"><span class="card-star" onclick="toggleStar(this, 'slot-200', 'GAME 200')">★</span><div class="box"></div><span>GAME 200</span></div>
+          <div class="slot" id="slot-201"><span class="card-star" onclick="toggleStar(this, 'slot-201', 'GAME 201')">★</span><div class="box"></div><span>GAME 201</span></div>
+<div class="slot" id="slot-202"><span class="card-star" onclick="toggleStar(this, 'slot-202', 'GAME 202')">★</span><div class="box"></div><span>GAME 202</span></div>
+<div class="slot" id="slot-203"><span class="card-star" onclick="toggleStar(this, 'slot-203', 'GAME 203')">★</span><div class="box"></div><span>GAME 203</span></div>
+<div class="slot" id="slot-204"><span class="card-star" onclick="toggleStar(this, 'slot-204', 'GAME 204')">★</span><div class="box"></div><span>GAME 204</span></div>
+<div class="slot" id="slot-205"><span class="card-star" onclick="toggleStar(this, 'slot-205', 'GAME 205')">★</span><div class="box"></div><span>GAME 205</span></div>
+<div class="slot" id="slot-206"><span class="card-star" onclick="toggleStar(this, 'slot-206', 'GAME 206')">★</span><div class="box"></div><span>GAME 206</span></div>
+<div class="slot" id="slot-207"><span class="card-star" onclick="toggleStar(this, 'slot-207', 'GAME 207')">★</span><div class="box"></div><span>GAME 207</span></div>
+<div class="slot" id="slot-208"><span class="card-star" onclick="toggleStar(this, 'slot-208', 'GAME 208')">★</span><div class="box"></div><span>GAME 208</span></div>
+<div class="slot" id="slot-209"><span class="card-star" onclick="toggleStar(this, 'slot-209', 'GAME 209')">★</span><div class="box"></div><span>GAME 209</span></div>
+<div class="slot" id="slot-210"><span class="card-star" onclick="toggleStar(this, 'slot-210', 'GAME 210')">★</span><div class="box"></div><span>GAME 210</span></div>
+<div class="slot" id="slot-211"><span class="card-star" onclick="toggleStar(this, 'slot-211', 'GAME 211')">★</span><div class="box"></div><span>GAME 211</span></div>
+<div class="slot" id="slot-212"><span class="card-star" onclick="toggleStar(this, 'slot-212', 'GAME 212')">★</span><div class="box"></div><span>GAME 212</span></div>
+<div class="slot" id="slot-213"><span class="card-star" onclick="toggleStar(this, 'slot-213', 'GAME 213')">★</span><div class="box"></div><span>GAME 213</span></div>
+<div class="slot" id="slot-214"><span class="card-star" onclick="toggleStar(this, 'slot-214', 'GAME 214')">★</span><div class="box"></div><span>GAME 214</span></div>
+<div class="slot" id="slot-215"><span class="card-star" onclick="toggleStar(this, 'slot-215', 'GAME 215')">★</span><div class="box"></div><span>GAME 215</span></div>
+<div class="slot" id="slot-216"><span class="card-star" onclick="toggleStar(this, 'slot-216', 'GAME 216')">★</span><div class="box"></div><span>GAME 216</span></div>
+<div class="slot" id="slot-217"><span class="card-star" onclick="toggleStar(this, 'slot-217', 'GAME 217')">★</span><div class="box"></div><span>GAME 217</span></div>
+<div class="slot" id="slot-218"><span class="card-star" onclick="toggleStar(this, 'slot-218', 'GAME 218')">★</span><div class="box"></div><span>GAME 218</span></div>
+<div class="slot" id="slot-219"><span class="card-star" onclick="toggleStar(this, 'slot-219', 'GAME 219')">★</span><div class="box"></div><span>GAME 219</span></div>
+<div class="slot" id="slot-220"><span class="card-star" onclick="toggleStar(this, 'slot-220', 'GAME 220')">★</span><div class="box"></div><span>GAME 220</span></div>
+<div class="slot" id="slot-221"><span class="card-star" onclick="toggleStar(this, 'slot-221', 'GAME 221')">★</span><div class="box"></div><span>GAME 221</span></div>
+<div class="slot" id="slot-222"><span class="card-star" onclick="toggleStar(this, 'slot-222', 'GAME 222')">★</span><div class="box"></div><span>GAME 222</span></div>
+<div class="slot" id="slot-223"><span class="card-star" onclick="toggleStar(this, 'slot-223', 'GAME 223')">★</span><div class="box"></div><span>GAME 223</span></div>
+<div class="slot" id="slot-224"><span class="card-star" onclick="toggleStar(this, 'slot-224', 'GAME 224')">★</span><div class="box"></div><span>GAME 224</span></div>
+<div class="slot" id="slot-225"><span class="card-star" onclick="toggleStar(this, 'slot-225', 'GAME 225')">★</span><div class="box"></div><span>GAME 225</span></div>
+<div class="slot" id="slot-226"><span class="card-star" onclick="toggleStar(this, 'slot-226', 'GAME 226')">★</span><div class="box"></div><span>GAME 226</span></div>
+<div class="slot" id="slot-227"><span class="card-star" onclick="toggleStar(this, 'slot-227', 'GAME 227')">★</span><div class="box"></div><span>GAME 227</span></div>
+<div class="slot" id="slot-228"><span class="card-star" onclick="toggleStar(this, 'slot-228', 'GAME 228')">★</span><div class="box"></div><span>GAME 228</span></div>
+<div class="slot" id="slot-229"><span class="card-star" onclick="toggleStar(this, 'slot-229', 'GAME 229')">★</span><div class="box"></div><span>GAME 229</span></div>
+<div class="slot" id="slot-230"><span class="card-star" onclick="toggleStar(this, 'slot-230', 'GAME 230')">★</span><div class="box"></div><span>GAME 230</span></div>
+<div class="slot" id="slot-231"><span class="card-star" onclick="toggleStar(this, 'slot-231', 'GAME 231')">★</span><div class="box"></div><span>GAME 231</span></div>
+<div class="slot" id="slot-232"><span class="card-star" onclick="toggleStar(this, 'slot-232', 'GAME 232')">★</span><div class="box"></div><span>GAME 232</span></div>
+<div class="slot" id="slot-233"><span class="card-star" onclick="toggleStar(this, 'slot-233', 'GAME 233')">★</span><div class="box"></div><span>GAME 233</span></div>
+<div class="slot" id="slot-234"><span class="card-star" onclick="toggleStar(this, 'slot-234', 'GAME 234')">★</span><div class="box"></div><span>GAME 234</span></div>
+<div class="slot" id="slot-235"><span class="card-star" onclick="toggleStar(this, 'slot-235', 'GAME 235')">★</span><div class="box"></div><span>GAME 235</span></div>
+<div class="slot" id="slot-236"><span class="card-star" onclick="toggleStar(this, 'slot-236', 'GAME 236')">★</span><div class="box"></div><span>GAME 236</span></div>
+<div class="slot" id="slot-237"><span class="card-star" onclick="toggleStar(this, 'slot-237', 'GAME 237')">★</span><div class="box"></div><span>GAME 237</span></div>
+<div class="slot" id="slot-238"><span class="card-star" onclick="toggleStar(this, 'slot-238', 'GAME 238')">★</span><div class="box"></div><span>GAME 238</span></div>
+<div class="slot" id="slot-239"><span class="card-star" onclick="toggleStar(this, 'slot-239', 'GAME 239')">★</span><div class="box"></div><span>GAME 239</span></div>
+<div class="slot" id="slot-240"><span class="card-star" onclick="toggleStar(this, 'slot-240', 'GAME 240')">★</span><div class="box"></div><span>GAME 240</span></div>
+<div class="slot" id="slot-241"><span class="card-star" onclick="toggleStar(this, 'slot-241', 'GAME 241')">★</span><div class="box"></div><span>GAME 241</span></div>
+<div class="slot" id="slot-242"><span class="card-star" onclick="toggleStar(this, 'slot-242', 'GAME 242')">★</span><div class="box"></div><span>GAME 242</span></div>
+<div class="slot" id="slot-243"><span class="card-star" onclick="toggleStar(this, 'slot-243', 'GAME 243')">★</span><div class="box"></div><span>GAME 243</span></div>
+<div class="slot" id="slot-244"><span class="card-star" onclick="toggleStar(this, 'slot-244', 'GAME 244')">★</span><div class="box"></div><span>GAME 244</span></div>
+<div class="slot" id="slot-245"><span class="card-star" onclick="toggleStar(this, 'slot-245', 'GAME 245')">★</span><div class="box"></div><span>GAME 245</span></div>
+<div class="slot" id="slot-246"><span class="card-star" onclick="toggleStar(this, 'slot-246', 'GAME 246')">★</span><div class="box"></div><span>GAME 246</span></div>
+<div class="slot" id="slot-247"><span class="card-star" onclick="toggleStar(this, 'slot-247', 'GAME 247')">★</span><div class="box"></div><span>GAME 247</span></div>
+<div class="slot" id="slot-248"><span class="card-star" onclick="toggleStar(this, 'slot-248', 'GAME 248')">★</span><div class="box"></div><span>GAME 248</span></div>
+<div class="slot" id="slot-249"><span class="card-star" onclick="toggleStar(this, 'slot-249', 'GAME 249')">★</span><div class="box"></div><span>GAME 249</span></div>
+<div class="slot" id="slot-250"><span class="card-star" onclick="toggleStar(this, 'slot-250', 'GAME 250')">★</span><div class="box"></div><span>GAME 250</span></div>
+<div class="slot" id="slot-251"><span class="card-star" onclick="toggleStar(this, 'slot-251', 'GAME 251')">★</span><div class="box"></div><span>GAME 251</span></div>
+<div class="slot" id="slot-252"><span class="card-star" onclick="toggleStar(this, 'slot-252', 'GAME 252')">★</span><div class="box"></div><span>GAME 252</span></div>
+<div class="slot" id="slot-253"><span class="card-star" onclick="toggleStar(this, 'slot-253', 'GAME 253')">★</span><div class="box"></div><span>GAME 253</span></div>
+<div class="slot" id="slot-254"><span class="card-star" onclick="toggleStar(this, 'slot-254', 'GAME 254')">★</span><div class="box"></div><span>GAME 254</span></div>
+<div class="slot" id="slot-255"><span class="card-star" onclick="toggleStar(this, 'slot-255', 'GAME 255')">★</span><div class="box"></div><span>GAME 255</span></div>
+<div class="slot" id="slot-256"><span class="card-star" onclick="toggleStar(this, 'slot-256', 'GAME 256')">★</span><div class="box"></div><span>GAME 256</span></div>
+<div class="slot" id="slot-257"><span class="card-star" onclick="toggleStar(this, 'slot-257', 'GAME 257')">★</span><div class="box"></div><span>GAME 257</span></div>
+<div class="slot" id="slot-258"><span class="card-star" onclick="toggleStar(this, 'slot-258', 'GAME 258')">★</span><div class="box"></div><span>GAME 258</span></div>
+<div class="slot" id="slot-259"><span class="card-star" onclick="toggleStar(this, 'slot-259', 'GAME 259')">★</span><div class="box"></div><span>GAME 259</span></div>
+<div class="slot" id="slot-260"><span class="card-star" onclick="toggleStar(this, 'slot-260', 'GAME 260')">★</span><div class="box"></div><span>GAME 260</span></div>
+<div class="slot" id="slot-261"><span class="card-star" onclick="toggleStar(this, 'slot-261', 'GAME 261')">★</span><div class="box"></div><span>GAME 261</span></div>
+<div class="slot" id="slot-262"><span class="card-star" onclick="toggleStar(this, 'slot-262', 'GAME 262')">★</span><div class="box"></div><span>GAME 262</span></div>
+<div class="slot" id="slot-263"><span class="card-star" onclick="toggleStar(this, 'slot-263', 'GAME 263')">★</span><div class="box"></div><span>GAME 263</span></div>
+<div class="slot" id="slot-264"><span class="card-star" onclick="toggleStar(this, 'slot-264', 'GAME 264')">★</span><div class="box"></div><span>GAME 264</span></div>
+<div class="slot" id="slot-265"><span class="card-star" onclick="toggleStar(this, 'slot-265', 'GAME 265')">★</span><div class="box"></div><span>GAME 265</span></div>
+<div class="slot" id="slot-266"><span class="card-star" onclick="toggleStar(this, 'slot-266', 'GAME 266')">★</span><div class="box"></div><span>GAME 266</span></div>
+<div class="slot" id="slot-267"><span class="card-star" onclick="toggleStar(this, 'slot-267', 'GAME 267')">★</span><div class="box"></div><span>GAME 267</span></div>
+<div class="slot" id="slot-268"><span class="card-star" onclick="toggleStar(this, 'slot-268', 'GAME 268')">★</span><div class="box"></div><span>GAME 268</span></div>
+<div class="slot" id="slot-269"><span class="card-star" onclick="toggleStar(this, 'slot-269', 'GAME 269')">★</span><div class="box"></div><span>GAME 269</span></div>
+<div class="slot" id="slot-270"><span class="card-star" onclick="toggleStar(this, 'slot-270', 'GAME 270')">★</span><div class="box"></div><span>GAME 270</span></div>
+<div class="slot" id="slot-271"><span class="card-star" onclick="toggleStar(this, 'slot-271', 'GAME 271')">★</span><div class="box"></div><span>GAME 271</span></div>
+<div class="slot" id="slot-272"><span class="card-star" onclick="toggleStar(this, 'slot-272', 'GAME 272')">★</span><div class="box"></div><span>GAME 272</span></div>
+<div class="slot" id="slot-273"><span class="card-star" onclick="toggleStar(this, 'slot-273', 'GAME 273')">★</span><div class="box"></div><span>GAME 273</span></div>
+<div class="slot" id="slot-274"><span class="card-star" onclick="toggleStar(this, 'slot-274', 'GAME 274')">★</span><div class="box"></div><span>GAME 274</span></div>
+<div class="slot" id="slot-275"><span class="card-star" onclick="toggleStar(this, 'slot-275', 'GAME 275')">★</span><div class="box"></div><span>GAME 275</span></div>
+<div class="slot" id="slot-276"><span class="card-star" onclick="toggleStar(this, 'slot-276', 'GAME 276')">★</span><div class="box"></div><span>GAME 276</span></div>
+<div class="slot" id="slot-277"><span class="card-star" onclick="toggleStar(this, 'slot-277', 'GAME 277')">★</span><div class="box"></div><span>GAME 277</span></div>
+<div class="slot" id="slot-278"><span class="card-star" onclick="toggleStar(this, 'slot-278', 'GAME 278')">★</span><div class="box"></div><span>GAME 278</span></div>
+<div class="slot" id="slot-279"><span class="card-star" onclick="toggleStar(this, 'slot-279', 'GAME 279')">★</span><div class="box"></div><span>GAME 279</span></div>
+<div class="slot" id="slot-280"><span class="card-star" onclick="toggleStar(this, 'slot-280', 'GAME 280')">★</span><div class="box"></div><span>GAME 280</span></div>
+<div class="slot" id="slot-281"><span class="card-star" onclick="toggleStar(this, 'slot-281', 'GAME 281')">★</span><div class="box"></div><span>GAME 281</span></div>
+<div class="slot" id="slot-282"><span class="card-star" onclick="toggleStar(this, 'slot-282', 'GAME 282')">★</span><div class="box"></div><span>GAME 282</span></div>
+<div class="slot" id="slot-283"><span class="card-star" onclick="toggleStar(this, 'slot-283', 'GAME 283')">★</span><div class="box"></div><span>GAME 283</span></div>
+<div class="slot" id="slot-284"><span class="card-star" onclick="toggleStar(this, 'slot-284', 'GAME 284')">★</span><div class="box"></div><span>GAME 284</span></div>
+<div class="slot" id="slot-285"><span class="card-star" onclick="toggleStar(this, 'slot-285', 'GAME 285')">★</span><div class="box"></div><span>GAME 285</span></div>
+<div class="slot" id="slot-286"><span class="card-star" onclick="toggleStar(this, 'slot-286', 'GAME 286')">★</span><div class="box"></div><span>GAME 286</span></div>
+<div class="slot" id="slot-287"><span class="card-star" onclick="toggleStar(this, 'slot-287', 'GAME 287')">★</span><div class="box"></div><span>GAME 287</span></div>
+<div class="slot" id="slot-288"><span class="card-star" onclick="toggleStar(this, 'slot-288', 'GAME 288')">★</span><div class="box"></div><span>GAME 288</span></div>
+<div class="slot" id="slot-289"><span class="card-star" onclick="toggleStar(this, 'slot-289', 'GAME 289')">★</span><div class="box"></div><span>GAME 289</span></div>
+<div class="slot" id="slot-290"><span class="card-star" onclick="toggleStar(this, 'slot-290', 'GAME 290')">★</span><div class="box"></div><span>GAME 290</span></div>
+<div class="slot" id="slot-291"><span class="card-star" onclick="toggleStar(this, 'slot-291', 'GAME 291')">★</span><div class="box"></div><span>GAME 291</span></div>
+<div class="slot" id="slot-292"><span class="card-star" onclick="toggleStar(this, 'slot-292', 'GAME 292')">★</span><div class="box"></div><span>GAME 292</span></div>
+<div class="slot" id="slot-293"><span class="card-star" onclick="toggleStar(this, 'slot-293', 'GAME 293')">★</span><div class="box"></div><span>GAME 293</span></div>
+<div class="slot" id="slot-294"><span class="card-star" onclick="toggleStar(this, 'slot-294', 'GAME 294')">★</span><div class="box"></div><span>GAME 294</span></div>
+<div class="slot" id="slot-295"><span class="card-star" onclick="toggleStar(this, 'slot-295', 'GAME 295')">★</span><div class="box"></div><span>GAME 295</span></div>
+<div class="slot" id="slot-296"><span class="card-star" onclick="toggleStar(this, 'slot-296', 'GAME 296')">★</span><div class="box"></div><span>GAME 296</span></div>
+<div class="slot" id="slot-297"><span class="card-star" onclick="toggleStar(this, 'slot-297', 'GAME 297')">★</span><div class="box"></div><span>GAME 297</span></div>
+<div class="slot" id="slot-298"><span class="card-star" onclick="toggleStar(this, 'slot-298', 'GAME 298')">★</span><div class="box"></div><span>GAME 298</span></div>
+<div class="slot" id="slot-299"><span class="card-star" onclick="toggleStar(this, 'slot-299', 'GAME 299')">★</span><div class="box"></div><span>GAME 299</span></div>
+<div class="slot" id="slot-300"><span class="card-star" onclick="toggleStar(this, 'slot-300', 'GAME 300')">★</span><div class="box"></div><span>GAME 300</span></div>
+<div class="slot" id="slot-301"><span class="card-star" onclick="toggleStar(this, 'slot-301', 'GAME 301')">★</span><div class="box"></div><span>GAME 301</span></div>
+<div class="slot" id="slot-302"><span class="card-star" onclick="toggleStar(this, 'slot-302', 'GAME 302')">★</span><div class="box"></div><span>GAME 302</span></div>
+<div class="slot" id="slot-303"><span class="card-star" onclick="toggleStar(this, 'slot-303', 'GAME 303')">★</span><div class="box"></div><span>GAME 303</span></div>
+<div class="slot" id="slot-304"><span class="card-star" onclick="toggleStar(this, 'slot-304', 'GAME 304')">★</span><div class="box"></div><span>GAME 304</span></div>
+<div class="slot" id="slot-305"><span class="card-star" onclick="toggleStar(this, 'slot-305', 'GAME 305')">★</span><div class="box"></div><span>GAME 305</span></div>
+<div class="slot" id="slot-306"><span class="card-star" onclick="toggleStar(this, 'slot-306', 'GAME 306')">★</span><div class="box"></div><span>GAME 306</span></div>
+<div class="slot" id="slot-307"><span class="card-star" onclick="toggleStar(this, 'slot-307', 'GAME 307')">★</span><div class="box"></div><span>GAME 307</span></div>
+<div class="slot" id="slot-308"><span class="card-star" onclick="toggleStar(this, 'slot-308', 'GAME 308')">★</span><div class="box"></div><span>GAME 308</span></div>
+<div class="slot" id="slot-309"><span class="card-star" onclick="toggleStar(this, 'slot-309', 'GAME 309')">★</span><div class="box"></div><span>GAME 309</span></div>
+<div class="slot" id="slot-310"><span class="card-star" onclick="toggleStar(this, 'slot-310', 'GAME 310')">★</span><div class="box"></div><span>GAME 310</span></div>
+<div class="slot" id="slot-311"><span class="card-star" onclick="toggleStar(this, 'slot-311', 'GAME 311')">★</span><div class="box"></div><span>GAME 311</span></div>
+<div class="slot" id="slot-312"><span class="card-star" onclick="toggleStar(this, 'slot-312', 'GAME 312')">★</span><div class="box"></div><span>GAME 312</span></div>
+<div class="slot" id="slot-313"><span class="card-star" onclick="toggleStar(this, 'slot-313', 'GAME 313')">★</span><div class="box"></div><span>GAME 313</span></div>
+<div class="slot" id="slot-314"><span class="card-star" onclick="toggleStar(this, 'slot-314', 'GAME 314')">★</span><div class="box"></div><span>GAME 314</span></div>
+<div class="slot" id="slot-315"><span class="card-star" onclick="toggleStar(this, 'slot-315', 'GAME 315')">★</span><div class="box"></div><span>GAME 315</span></div>
+<div class="slot" id="slot-316"><span class="card-star" onclick="toggleStar(this, 'slot-316', 'GAME 316')">★</span><div class="box"></div><span>GAME 316</span></div>
+<div class="slot" id="slot-317"><span class="card-star" onclick="toggleStar(this, 'slot-317', 'GAME 317')">★</span><div class="box"></div><span>GAME 317</span></div>
+<div class="slot" id="slot-318"><span class="card-star" onclick="toggleStar(this, 'slot-318', 'GAME 318')">★</span><div class="box"></div><span>GAME 318</span></div>
+<div class="slot" id="slot-319"><span class="card-star" onclick="toggleStar(this, 'slot-319', 'GAME 319')">★</span><div class="box"></div><span>GAME 319</span></div>
+<div class="slot" id="slot-320"><span class="card-star" onclick="toggleStar(this, 'slot-320', 'GAME 320')">★</span><div class="box"></div><span>GAME 320</span></div>
+<div class="slot" id="slot-321"><span class="card-star" onclick="toggleStar(this, 'slot-321', 'GAME 321')">★</span><div class="box"></div><span>GAME 321</span></div>
+<div class="slot" id="slot-322"><span class="card-star" onclick="toggleStar(this, 'slot-322', 'GAME 322')">★</span><div class="box"></div><span>GAME 322</span></div>
+<div class="slot" id="slot-323"><span class="card-star" onclick="toggleStar(this, 'slot-323', 'GAME 323')">★</span><div class="box"></div><span>GAME 323</span></div>
+<div class="slot" id="slot-324"><span class="card-star" onclick="toggleStar(this, 'slot-324', 'GAME 324')">★</span><div class="box"></div><span>GAME 324</span></div>
+<div class="slot" id="slot-325"><span class="card-star" onclick="toggleStar(this, 'slot-325', 'GAME 325')">★</span><div class="box"></div><span>GAME 325</span></div>
+<div class="slot" id="slot-326"><span class="card-star" onclick="toggleStar(this, 'slot-326', 'GAME 326')">★</span><div class="box"></div><span>GAME 326</span></div>
+<div class="slot" id="slot-327"><span class="card-star" onclick="toggleStar(this, 'slot-327', 'GAME 327')">★</span><div class="box"></div><span>GAME 327</span></div>
+<div class="slot" id="slot-328"><span class="card-star" onclick="toggleStar(this, 'slot-328', 'GAME 328')">★</span><div class="box"></div><span>GAME 328</span></div>
+<div class="slot" id="slot-329"><span class="card-star" onclick="toggleStar(this, 'slot-329', 'GAME 329')">★</span><div class="box"></div><span>GAME 329</span></div>
+<div class="slot" id="slot-330"><span class="card-star" onclick="toggleStar(this, 'slot-330', 'GAME 330')">★</span><div class="box"></div><span>GAME 330</span></div>
+<div class="slot" id="slot-331"><span class="card-star" onclick="toggleStar(this, 'slot-331', 'GAME 331')">★</span><div class="box"></div><span>GAME 331</span></div>
+<div class="slot" id="slot-332"><span class="card-star" onclick="toggleStar(this, 'slot-332', 'GAME 332')">★</span><div class="box"></div><span>GAME 332</span></div>
+<div class="slot" id="slot-333"><span class="card-star" onclick="toggleStar(this, 'slot-333', 'GAME 333')">★</span><div class="box"></div><span>GAME 333</span></div>
+<div class="slot" id="slot-334"><span class="card-star" onclick="toggleStar(this, 'slot-334', 'GAME 334')">★</span><div class="box"></div><span>GAME 334</span></div>
+<div class="slot" id="slot-335"><span class="card-star" onclick="toggleStar(this, 'slot-335', 'GAME 335')">★</span><div class="box"></div><span>GAME 335</span></div>
+<div class="slot" id="slot-336"><span class="card-star" onclick="toggleStar(this, 'slot-336', 'GAME 336')">★</span><div class="box"></div><span>GAME 336</span></div>
+<div class="slot" id="slot-337"><span class="card-star" onclick="toggleStar(this, 'slot-337', 'GAME 337')">★</span><div class="box"></div><span>GAME 337</span></div>
+<div class="slot" id="slot-338"><span class="card-star" onclick="toggleStar(this, 'slot-338', 'GAME 338')">★</span><div class="box"></div><span>GAME 338</span></div>
+<div class="slot" id="slot-339"><span class="card-star" onclick="toggleStar(this, 'slot-339', 'GAME 339')">★</span><div class="box"></div><span>GAME 339</span></div>
+<div class="slot" id="slot-340"><span class="card-star" onclick="toggleStar(this, 'slot-340', 'GAME 340')">★</span><div class="box"></div><span>GAME 340</span></div>
+<div class="slot" id="slot-341"><span class="card-star" onclick="toggleStar(this, 'slot-341', 'GAME 341')">★</span><div class="box"></div><span>GAME 341</span></div>
+<div class="slot" id="slot-342"><span class="card-star" onclick="toggleStar(this, 'slot-342', 'GAME 342')">★</span><div class="box"></div><span>GAME 342</span></div>
+<div class="slot" id="slot-343"><span class="card-star" onclick="toggleStar(this, 'slot-343', 'GAME 343')">★</span><div class="box"></div><span>GAME 343</span></div>
+<div class="slot" id="slot-344"><span class="card-star" onclick="toggleStar(this, 'slot-344', 'GAME 344')">★</span><div class="box"></div><span>GAME 344</span></div>
+<div class="slot" id="slot-345"><span class="card-star" onclick="toggleStar(this, 'slot-345', 'GAME 345')">★</span><div class="box"></div><span>GAME 345</span></div>
+<div class="slot" id="slot-346"><span class="card-star" onclick="toggleStar(this, 'slot-346', 'GAME 346')">★</span><div class="box"></div><span>GAME 346</span></div>
+<div class="slot" id="slot-347"><span class="card-star" onclick="toggleStar(this, 'slot-347', 'GAME 347')">★</span><div class="box"></div><span>GAME 347</span></div>
+<div class="slot" id="slot-348"><span class="card-star" onclick="toggleStar(this, 'slot-348', 'GAME 348')">★</span><div class="box"></div><span>GAME 348</span></div>
+<div class="slot" id="slot-349"><span class="card-star" onclick="toggleStar(this, 'slot-349', 'GAME 349')">★</span><div class="box"></div><span>GAME 349</span></div>
+<div class="slot" id="slot-350"><span class="card-star" onclick="toggleStar(this, 'slot-350', 'GAME 350')">★</span><div class="box"></div><span>GAME 350</span></div>
+<div class="slot" id="slot-351"><span class="card-star" onclick="toggleStar(this, 'slot-351', 'GAME 351')">★</span><div class="box"></div><span>GAME 351</span></div>
+<div class="slot" id="slot-352"><span class="card-star" onclick="toggleStar(this, 'slot-352', 'GAME 352')">★</span><div class="box"></div><span>GAME 352</span></div>
+<div class="slot" id="slot-353"><span class="card-star" onclick="toggleStar(this, 'slot-353', 'GAME 353')">★</span><div class="box"></div><span>GAME 353</span></div>
+<div class="slot" id="slot-354"><span class="card-star" onclick="toggleStar(this, 'slot-354', 'GAME 354')">★</span><div class="box"></div><span>GAME 354</span></div>
+<div class="slot" id="slot-355"><span class="card-star" onclick="toggleStar(this, 'slot-355', 'GAME 355')">★</span><div class="box"></div><span>GAME 355</span></div>
+<div class="slot" id="slot-356"><span class="card-star" onclick="toggleStar(this, 'slot-356', 'GAME 356')">★</span><div class="box"></div><span>GAME 356</span></div>
+<div class="slot" id="slot-357"><span class="card-star" onclick="toggleStar(this, 'slot-357', 'GAME 357')">★</span><div class="box"></div><span>GAME 357</span></div>
+<div class="slot" id="slot-358"><span class="card-star" onclick="toggleStar(this, 'slot-358', 'GAME 358')">★</span><div class="box"></div><span>GAME 358</span></div>
+<div class="slot" id="slot-359"><span class="card-star" onclick="toggleStar(this, 'slot-359', 'GAME 359')">★</span><div class="box"></div><span>GAME 359</span></div>
+<div class="slot" id="slot-360"><span class="card-star" onclick="toggleStar(this, 'slot-360', 'GAME 360')">★</span><div class="box"></div><span>GAME 360</span></div>
+<div class="slot" id="slot-361"><span class="card-star" onclick="toggleStar(this, 'slot-361', 'GAME 361')">★</span><div class="box"></div><span>GAME 361</span></div>
+<div class="slot" id="slot-362"><span class="card-star" onclick="toggleStar(this, 'slot-362', 'GAME 362')">★</span><div class="box"></div><span>GAME 362</span></div>
+<div class="slot" id="slot-363"><span class="card-star" onclick="toggleStar(this, 'slot-363', 'GAME 363')">★</span><div class="box"></div><span>GAME 363</span></div>
+<div class="slot" id="slot-364"><span class="card-star" onclick="toggleStar(this, 'slot-364', 'GAME 364')">★</span><div class="box"></div><span>GAME 364</span></div>
+<div class="slot" id="slot-365"><span class="card-star" onclick="toggleStar(this, 'slot-365', 'GAME 365')">★</span><div class="box"></div><span>GAME 365</span></div>
+<div class="slot" id="slot-366"><span class="card-star" onclick="toggleStar(this, 'slot-366', 'GAME 366')">★</span><div class="box"></div><span>GAME 366</span></div>
+<div class="slot" id="slot-367"><span class="card-star" onclick="toggleStar(this, 'slot-367', 'GAME 367')">★</span><div class="box"></div><span>GAME 367</span></div>
+<div class="slot" id="slot-368"><span class="card-star" onclick="toggleStar(this, 'slot-368', 'GAME 368')">★</span><div class="box"></div><span>GAME 368</span></div>
+<div class="slot" id="slot-369"><span class="card-star" onclick="toggleStar(this, 'slot-369', 'GAME 369')">★</span><div class="box"></div><span>GAME 369</span></div>
+<div class="slot" id="slot-370"><span class="card-star" onclick="toggleStar(this, 'slot-370', 'GAME 370')">★</span><div class="box"></div><span>GAME 370</span></div>
+<div class="slot" id="slot-371"><span class="card-star" onclick="toggleStar(this, 'slot-371', 'GAME 371')">★</span><div class="box"></div><span>GAME 371</span></div>
+<div class="slot" id="slot-372"><span class="card-star" onclick="toggleStar(this, 'slot-372', 'GAME 372')">★</span><div class="box"></div><span>GAME 372</span></div>
+<div class="slot" id="slot-373"><span class="card-star" onclick="toggleStar(this, 'slot-373', 'GAME 373')">★</span><div class="box"></div><span>GAME 373</span></div>
+<div class="slot" id="slot-374"><span class="card-star" onclick="toggleStar(this, 'slot-374', 'GAME 374')">★</span><div class="box"></div><span>GAME 374</span></div>
+<div class="slot" id="slot-375"><span class="card-star" onclick="toggleStar(this, 'slot-375', 'GAME 375')">★</span><div class="box"></div><span>GAME 375</span></div>
+<div class="slot" id="slot-376"><span class="card-star" onclick="toggleStar(this, 'slot-376', 'GAME 376')">★</span><div class="box"></div><span>GAME 376</span></div>
+<div class="slot" id="slot-377"><span class="card-star" onclick="toggleStar(this, 'slot-377', 'GAME 377')">★</span><div class="box"></div><span>GAME 377</span></div>
+<div class="slot" id="slot-378"><span class="card-star" onclick="toggleStar(this, 'slot-378', 'GAME 378')">★</span><div class="box"></div><span>GAME 378</span></div>
+<div class="slot" id="slot-379"><span class="card-star" onclick="toggleStar(this, 'slot-379', 'GAME 379')">★</span><div class="box"></div><span>GAME 379</span></div>
+<div class="slot" id="slot-380"><span class="card-star" onclick="toggleStar(this, 'slot-380', 'GAME 380')">★</span><div class="box"></div><span>GAME 380</span></div>
+<div class="slot" id="slot-381"><span class="card-star" onclick="toggleStar(this, 'slot-381', 'GAME 381')">★</span><div class="box"></div><span>GAME 381</span></div>
+<div class="slot" id="slot-382"><span class="card-star" onclick="toggleStar(this, 'slot-382', 'GAME 382')">★</span><div class="box"></div><span>GAME 382</span></div>
+<div class="slot" id="slot-383"><span class="card-star" onclick="toggleStar(this, 'slot-383', 'GAME 383')">★</span><div class="box"></div><span>GAME 383</span></div>
+<div class="slot" id="slot-384"><span class="card-star" onclick="toggleStar(this, 'slot-384', 'GAME 384')">★</span><div class="box"></div><span>GAME 384</span></div>
+<div class="slot" id="slot-385"><span class="card-star" onclick="toggleStar(this, 'slot-385', 'GAME 385')">★</span><div class="box"></div><span>GAME 385</span></div>
+<div class="slot" id="slot-386"><span class="card-star" onclick="toggleStar(this, 'slot-386', 'GAME 386')">★</span><div class="box"></div><span>GAME 386</span></div>
+<div class="slot" id="slot-387"><span class="card-star" onclick="toggleStar(this, 'slot-387', 'GAME 387')">★</span><div class="box"></div><span>GAME 387</span></div>
+<div class="slot" id="slot-388"><span class="card-star" onclick="toggleStar(this, 'slot-388', 'GAME 388')">★</span><div class="box"></div><span>GAME 388</span></div>
+<div class="slot" id="slot-389"><span class="card-star" onclick="toggleStar(this, 'slot-389', 'GAME 389')">★</span><div class="box"></div><span>GAME 389</span></div>
+<div class="slot" id="slot-390"><span class="card-star" onclick="toggleStar(this, 'slot-390', 'GAME 390')">★</span><div class="box"></div><span>GAME 390</span></div>
+<div class="slot" id="slot-391"><span class="card-star" onclick="toggleStar(this, 'slot-391', 'GAME 391')">★</span><div class="box"></div><span>GAME 391</span></div>
+<div class="slot" id="slot-392"><span class="card-star" onclick="toggleStar(this, 'slot-392', 'GAME 392')">★</span><div class="box"></div><span>GAME 392</span></div>
+<div class="slot" id="slot-393"><span class="card-star" onclick="toggleStar(this, 'slot-393', 'GAME 393')">★</span><div class="box"></div><span>GAME 393</span></div>
+<div class="slot" id="slot-394"><span class="card-star" onclick="toggleStar(this, 'slot-394', 'GAME 394')">★</span><div class="box"></div><span>GAME 394</span></div>
+<div class="slot" id="slot-395"><span class="card-star" onclick="toggleStar(this, 'slot-395', 'GAME 395')">★</span><div class="box"></div><span>GAME 395</span></div>
+<div class="slot" id="slot-396"><span class="card-star" onclick="toggleStar(this, 'slot-396', 'GAME 396')">★</span><div class="box"></div><span>GAME 396</span></div>
+<div class="slot" id="slot-397"><span class="card-star" onclick="toggleStar(this, 'slot-397', 'GAME 397')">★</span><div class="box"></div><span>GAME 397</span></div>
+<div class="slot" id="slot-398"><span class="card-star" onclick="toggleStar(this, 'slot-398', 'GAME 398')">★</span><div class="box"></div><span>GAME 398</span></div>
+<div class="slot" id="slot-399"><span class="card-star" onclick="toggleStar(this, 'slot-399', 'GAME 399')">★</span><div class="box"></div><span>GAME 399</span></div>
+<div class="slot" id="slot-400"><span class="card-star" onclick="toggleStar(this, 'slot-400', 'GAME 400')">★</span><div class="box"></div><span>GAME 400</span></div>
+          <div class="slot" id="slot-401"><span class="card-star" onclick="toggleStar(this, 'slot-401', 'GAME 401')">★</span><div class="box"></div><span>GAME 401</span></div>
+<div class="slot" id="slot-402"><span class="card-star" onclick="toggleStar(this, 'slot-402', 'GAME 402')">★</span><div class="box"></div><span>GAME 402</span></div>
+<div class="slot" id="slot-403"><span class="card-star" onclick="toggleStar(this, 'slot-403', 'GAME 403')">★</span><div class="box"></div><span>GAME 403</span></div>
+<div class="slot" id="slot-404"><span class="card-star" onclick="toggleStar(this, 'slot-404', 'GAME 404')">★</span><div class="box"></div><span>GAME 404</span></div>
+<div class="slot" id="slot-405"><span class="card-star" onclick="toggleStar(this, 'slot-405', 'GAME 405')">★</span><div class="box"></div><span>GAME 405</span></div>
+<div class="slot" id="slot-406"><span class="card-star" onclick="toggleStar(this, 'slot-406', 'GAME 406')">★</span><div class="box"></div><span>GAME 406</span></div>
+<div class="slot" id="slot-407"><span class="card-star" onclick="toggleStar(this, 'slot-407', 'GAME 407')">★</span><div class="box"></div><span>GAME 407</span></div>
+<div class="slot" id="slot-408"><span class="card-star" onclick="toggleStar(this, 'slot-408', 'GAME 408')">★</span><div class="box"></div><span>GAME 408</span></div>
+<div class="slot" id="slot-409"><span class="card-star" onclick="toggleStar(this, 'slot-409', 'GAME 409')">★</span><div class="box"></div><span>GAME 409</span></div>
+<div class="slot" id="slot-410"><span class="card-star" onclick="toggleStar(this, 'slot-410', 'GAME 410')">★</span><div class="box"></div><span>GAME 410</span></div>
+<div class="slot" id="slot-411"><span class="card-star" onclick="toggleStar(this, 'slot-411', 'GAME 411')">★</span><div class="box"></div><span>GAME 411</span></div>
+<div class="slot" id="slot-412"><span class="card-star" onclick="toggleStar(this, 'slot-412', 'GAME 412')">★</span><div class="box"></div><span>GAME 412</span></div>
+<div class="slot" id="slot-413"><span class="card-star" onclick="toggleStar(this, 'slot-413', 'GAME 413')">★</span><div class="box"></div><span>GAME 413</span></div>
+<div class="slot" id="slot-414"><span class="card-star" onclick="toggleStar(this, 'slot-414', 'GAME 414')">★</span><div class="box"></div><span>GAME 414</span></div>
+<div class="slot" id="slot-415"><span class="card-star" onclick="toggleStar(this, 'slot-415', 'GAME 415')">★</span><div class="box"></div><span>GAME 415</span></div>
+<div class="slot" id="slot-416"><span class="card-star" onclick="toggleStar(this, 'slot-416', 'GAME 416')">★</span><div class="box"></div><span>GAME 416</span></div>
+<div class="slot" id="slot-417"><span class="card-star" onclick="toggleStar(this, 'slot-417', 'GAME 417')">★</span><div class="box"></div><span>GAME 417</span></div>
+<div class="slot" id="slot-418"><span class="card-star" onclick="toggleStar(this, 'slot-418', 'GAME 418')">★</span><div class="box"></div><span>GAME 418</span></div>
+<div class="slot" id="slot-419"><span class="card-star" onclick="toggleStar(this, 'slot-419', 'GAME 419')">★</span><div class="box"></div><span>GAME 419</span></div>
+<div class="slot" id="slot-420"><span class="card-star" onclick="toggleStar(this, 'slot-420', 'GAME 420')">★</span><div class="box"></div><span>GAME 420</span></div>
+<div class="slot" id="slot-421"><span class="card-star" onclick="toggleStar(this, 'slot-421', 'GAME 421')">★</span><div class="box"></div><span>GAME 421</span></div>
+<div class="slot" id="slot-422"><span class="card-star" onclick="toggleStar(this, 'slot-422', 'GAME 422')">★</span><div class="box"></div><span>GAME 422</span></div>
+<div class="slot" id="slot-423"><span class="card-star" onclick="toggleStar(this, 'slot-423', 'GAME 423')">★</span><div class="box"></div><span>GAME 423</span></div>
+<div class="slot" id="slot-424"><span class="card-star" onclick="toggleStar(this, 'slot-424', 'GAME 424')">★</span><div class="box"></div><span>GAME 424</span></div>
+<div class="slot" id="slot-425"><span class="card-star" onclick="toggleStar(this, 'slot-425', 'GAME 425')">★</span><div class="box"></div><span>GAME 425</span></div>
+<div class="slot" id="slot-426"><span class="card-star" onclick="toggleStar(this, 'slot-426', 'GAME 426')">★</span><div class="box"></div><span>GAME 426</span></div>
+<div class="slot" id="slot-427"><span class="card-star" onclick="toggleStar(this, 'slot-427', 'GAME 427')">★</span><div class="box"></div><span>GAME 427</span></div>
+<div class="slot" id="slot-428"><span class="card-star" onclick="toggleStar(this, 'slot-428', 'GAME 428')">★</span><div class="box"></div><span>GAME 428</span></div>
+<div class="slot" id="slot-429"><span class="card-star" onclick="toggleStar(this, 'slot-429', 'GAME 429')">★</span><div class="box"></div><span>GAME 429</span></div>
+<div class="slot" id="slot-430"><span class="card-star" onclick="toggleStar(this, 'slot-430', 'GAME 430')">★</span><div class="box"></div><span>GAME 430</span></div>
+<div class="slot" id="slot-431"><span class="card-star" onclick="toggleStar(this, 'slot-431', 'GAME 431')">★</span><div class="box"></div><span>GAME 431</span></div>
+<div class="slot" id="slot-432"><span class="card-star" onclick="toggleStar(this, 'slot-432', 'GAME 432')">★</span><div class="box"></div><span>GAME 432</span></div>
+<div class="slot" id="slot-433"><span class="card-star" onclick="toggleStar(this, 'slot-433', 'GAME 433')">★</span><div class="box"></div><span>GAME 433</span></div>
+<div class="slot" id="slot-434"><span class="card-star" onclick="toggleStar(this, 'slot-434', 'GAME 434')">★</span><div class="box"></div><span>GAME 434</span></div>
+<div class="slot" id="slot-435"><span class="card-star" onclick="toggleStar(this, 'slot-435', 'GAME 435')">★</span><div class="box"></div><span>GAME 435</span></div>
+<div class="slot" id="slot-436"><span class="card-star" onclick="toggleStar(this, 'slot-436', 'GAME 436')">★</span><div class="box"></div><span>GAME 436</span></div>
+<div class="slot" id="slot-437"><span class="card-star" onclick="toggleStar(this, 'slot-437', 'GAME 437')">★</span><div class="box"></div><span>GAME 437</span></div>
+<div class="slot" id="slot-438"><span class="card-star" onclick="toggleStar(this, 'slot-438', 'GAME 438')">★</span><div class="box"></div><span>GAME 438</span></div>
+<div class="slot" id="slot-439"><span class="card-star" onclick="toggleStar(this, 'slot-439', 'GAME 439')">★</span><div class="box"></div><span>GAME 439</span></div>
+<div class="slot" id="slot-440"><span class="card-star" onclick="toggleStar(this, 'slot-440', 'GAME 440')">★</span><div class="box"></div><span>GAME 440</span></div>
+<div class="slot" id="slot-441"><span class="card-star" onclick="toggleStar(this, 'slot-441', 'GAME 441')">★</span><div class="box"></div><span>GAME 441</span></div>
+<div class="slot" id="slot-442"><span class="card-star" onclick="toggleStar(this, 'slot-442', 'GAME 442')">★</span><div class="box"></div><span>GAME 442</span></div>
+<div class="slot" id="slot-443"><span class="card-star" onclick="toggleStar(this, 'slot-443', 'GAME 443')">★</span><div class="box"></div><span>GAME 443</span></div>
+<div class="slot" id="slot-444"><span class="card-star" onclick="toggleStar(this, 'slot-444', 'GAME 444')">★</span><div class="box"></div><span>GAME 444</span></div>
+<div class="slot" id="slot-445"><span class="card-star" onclick="toggleStar(this, 'slot-445', 'GAME 445')">★</span><div class="box"></div><span>GAME 445</span></div>
+<div class="slot" id="slot-446"><span class="card-star" onclick="toggleStar(this, 'slot-446', 'GAME 446')">★</span><div class="box"></div><span>GAME 446</span></div>
+<div class="slot" id="slot-447"><span class="card-star" onclick="toggleStar(this, 'slot-447', 'GAME 447')">★</span><div class="box"></div><span>GAME 447</span></div>
+<div class="slot" id="slot-448"><span class="card-star" onclick="toggleStar(this, 'slot-448', 'GAME 448')">★</span><div class="box"></div><span>GAME 448</span></div>
+<div class="slot" id="slot-449"><span class="card-star" onclick="toggleStar(this, 'slot-449', 'GAME 449')">★</span><div class="box"></div><span>GAME 449</span></div>
+<div class="slot" id="slot-450"><span class="card-star" onclick="toggleStar(this, 'slot-450', 'GAME 450')">★</span><div class="box"></div><span>GAME 450</span></div>
+<div class="slot" id="slot-451"><span class="card-star" onclick="toggleStar(this, 'slot-451', 'GAME 451')">★</span><div class="box"></div><span>GAME 451</span></div>
+<div class="slot" id="slot-452"><span class="card-star" onclick="toggleStar(this, 'slot-452', 'GAME 452')">★</span><div class="box"></div><span>GAME 452</span></div>
+<div class="slot" id="slot-453"><span class="card-star" onclick="toggleStar(this, 'slot-453', 'GAME 453')">★</span><div class="box"></div><span>GAME 453</span></div>
+<div class="slot" id="slot-454"><span class="card-star" onclick="toggleStar(this, 'slot-454', 'GAME 454')">★</span><div class="box"></div><span>GAME 454</span></div>
+<div class="slot" id="slot-455"><span class="card-star" onclick="toggleStar(this, 'slot-455', 'GAME 455')">★</span><div class="box"></div><span>GAME 455</span></div>
+<div class="slot" id="slot-456"><span class="card-star" onclick="toggleStar(this, 'slot-456', 'GAME 456')">★</span><div class="box"></div><span>GAME 456</span></div>
+<div class="slot" id="slot-457"><span class="card-star" onclick="toggleStar(this, 'slot-457', 'GAME 457')">★</span><div class="box"></div><span>GAME 457</span></div>
+<div class="slot" id="slot-458"><span class="card-star" onclick="toggleStar(this, 'slot-458', 'GAME 458')">★</span><div class="box"></div><span>GAME 458</span></div>
+<div class="slot" id="slot-459"><span class="card-star" onclick="toggleStar(this, 'slot-459', 'GAME 459')">★</span><div class="box"></div><span>GAME 459</span></div>
+<div class="slot" id="slot-460"><span class="card-star" onclick="toggleStar(this, 'slot-460', 'GAME 460')">★</span><div class="box"></div><span>GAME 460</span></div>
+<div class="slot" id="slot-461"><span class="card-star" onclick="toggleStar(this, 'slot-461', 'GAME 461')">★</span><div class="box"></div><span>GAME 461</span></div>
+<div class="slot" id="slot-462"><span class="card-star" onclick="toggleStar(this, 'slot-462', 'GAME 462')">★</span><div class="box"></div><span>GAME 462</span></div>
+<div class="slot" id="slot-463"><span class="card-star" onclick="toggleStar(this, 'slot-463', 'GAME 463')">★</span><div class="box"></div><span>GAME 463</span></div>
+<div class="slot" id="slot-464"><span class="card-star" onclick="toggleStar(this, 'slot-464', 'GAME 464')">★</span><div class="box"></div><span>GAME 464</span></div>
+<div class="slot" id="slot-465"><span class="card-star" onclick="toggleStar(this, 'slot-465', 'GAME 465')">★</span><div class="box"></div><span>GAME 465</span></div>
+<div class="slot" id="slot-466"><span class="card-star" onclick="toggleStar(this, 'slot-466', 'GAME 466')">★</span><div class="box"></div><span>GAME 466</span></div>
+<div class="slot" id="slot-467"><span class="card-star" onclick="toggleStar(this, 'slot-467', 'GAME 467')">★</span><div class="box"></div><span>GAME 467</span></div>
+<div class="slot" id="slot-468"><span class="card-star" onclick="toggleStar(this, 'slot-468', 'GAME 468')">★</span><div class="box"></div><span>GAME 468</span></div>
+<div class="slot" id="slot-469"><span class="card-star" onclick="toggleStar(this, 'slot-469', 'GAME 469')">★</span><div class="box"></div><span>GAME 469</span></div>
+<div class="slot" id="slot-470"><span class="card-star" onclick="toggleStar(this, 'slot-470', 'GAME 470')">★</span><div class="box"></div><span>GAME 470</span></div>
+<div class="slot" id="slot-471"><span class="card-star" onclick="toggleStar(this, 'slot-471', 'GAME 471')">★</span><div class="box"></div><span>GAME 471</span></div>
+<div class="slot" id="slot-472"><span class="card-star" onclick="toggleStar(this, 'slot-472', 'GAME 472')">★</span><div class="box"></div><span>GAME 472</span></div>
+<div class="slot" id="slot-473"><span class="card-star" onclick="toggleStar(this, 'slot-473', 'GAME 473')">★</span><div class="box"></div><span>GAME 473</span></div>
+<div class="slot" id="slot-474"><span class="card-star" onclick="toggleStar(this, 'slot-474', 'GAME 474')">★</span><div class="box"></div><span>GAME 474</span></div>
+<div class="slot" id="slot-475"><span class="card-star" onclick="toggleStar(this, 'slot-475', 'GAME 475')">★</span><div class="box"></div><span>GAME 475</span></div>
+<div class="slot" id="slot-476"><span class="card-star" onclick="toggleStar(this, 'slot-476', 'GAME 476')">★</span><div class="box"></div><span>GAME 476</span></div>
+<div class="slot" id="slot-477"><span class="card-star" onclick="toggleStar(this, 'slot-477', 'GAME 477')">★</span><div class="box"></div><span>GAME 477</span></div>
+<div class="slot" id="slot-478"><span class="card-star" onclick="toggleStar(this, 'slot-478', 'GAME 478')">★</span><div class="box"></div><span>GAME 478</span></div>
+<div class="slot" id="slot-479"><span class="card-star" onclick="toggleStar(this, 'slot-479', 'GAME 479')">★</span><div class="box"></div><span>GAME 479</span></div>
+<div class="slot" id="slot-480"><span class="card-star" onclick="toggleStar(this, 'slot-480', 'GAME 480')">★</span><div class="box"></div><span>GAME 480</span></div>
+<div class="slot" id="slot-481"><span class="card-star" onclick="toggleStar(this, 'slot-481', 'GAME 481')">★</span><div class="box"></div><span>GAME 481</span></div>
+<div class="slot" id="slot-482"><span class="card-star" onclick="toggleStar(this, 'slot-482', 'GAME 482')">★</span><div class="box"></div><span>GAME 482</span></div>
+<div class="slot" id="slot-483"><span class="card-star" onclick="toggleStar(this, 'slot-483', 'GAME 483')">★</span><div class="box"></div><span>GAME 483</span></div>
+<div class="slot" id="slot-484"><span class="card-star" onclick="toggleStar(this, 'slot-484', 'GAME 484')">★</span><div class="box"></div><span>GAME 484</span></div>
+<div class="slot" id="slot-485"><span class="card-star" onclick="toggleStar(this, 'slot-485', 'GAME 485')">★</span><div class="box"></div><span>GAME 485</span></div>
+<div class="slot" id="slot-486"><span class="card-star" onclick="toggleStar(this, 'slot-486', 'GAME 486')">★</span><div class="box"></div><span>GAME 486</span></div>
+<div class="slot" id="slot-487"><span class="card-star" onclick="toggleStar(this, 'slot-487', 'GAME 487')">★</span><div class="box"></div><span>GAME 487</span></div>
+<div class="slot" id="slot-488"><span class="card-star" onclick="toggleStar(this, 'slot-488', 'GAME 488')">★</span><div class="box"></div><span>GAME 488</span></div>
+<div class="slot" id="slot-489"><span class="card-star" onclick="toggleStar(this, 'slot-489', 'GAME 489')">★</span><div class="box"></div><span>GAME 489</span></div>
+<div class="slot" id="slot-490"><span class="card-star" onclick="toggleStar(this, 'slot-490', 'GAME 490')">★</span><div class="box"></div><span>GAME 490</span></div>
+<div class="slot" id="slot-491"><span class="card-star" onclick="toggleStar(this, 'slot-491', 'GAME 491')">★</span><div class="box"></div><span>GAME 491</span></div>
+<div class="slot" id="slot-492"><span class="card-star" onclick="toggleStar(this, 'slot-492', 'GAME 492')">★</span><div class="box"></div><span>GAME 492</span></div>
+<div class="slot" id="slot-493"><span class="card-star" onclick="toggleStar(this, 'slot-493', 'GAME 493')">★</span><div class="box"></div><span>GAME 493</span></div>
+<div class="slot" id="slot-494"><span class="card-star" onclick="toggleStar(this, 'slot-494', 'GAME 494')">★</span><div class="box"></div><span>GAME 494</span></div>
+<div class="slot" id="slot-495"><span class="card-star" onclick="toggleStar(this, 'slot-495', 'GAME 495')">★</span><div class="box"></div><span>GAME 495</span></div>
+<div class="slot" id="slot-496"><span class="card-star" onclick="toggleStar(this, 'slot-496', 'GAME 496')">★</span><div class="box"></div><span>GAME 496</span></div>
+<div class="slot" id="slot-497"><span class="card-star" onclick="toggleStar(this, 'slot-497', 'GAME 497')">★</span><div class="box"></div><span>GAME 497</span></div>
+<div class="slot" id="slot-498"><span class="card-star" onclick="toggleStar(this, 'slot-498', 'GAME 498')">★</span><div class="box"></div><span>GAME 498</span></div>
+<div class="slot" id="slot-499"><span class="card-star" onclick="toggleStar(this, 'slot-499', 'GAME 499')">★</span><div class="box"></div><span>GAME 499</span></div>
+<div class="slot" id="slot-500"><span class="card-star" onclick="toggleStar(this, 'slot-500', 'GAME 500')">★</span><div class="box"></div><span>GAME 500</span></div>
+<div class="slot" id="slot-501"><span class="card-star" onclick="toggleStar(this, 'slot-501', 'GAME 501')">★</span><div class="box"></div><span>GAME 501</span></div>
+<div class="slot" id="slot-502"><span class="card-star" onclick="toggleStar(this, 'slot-502', 'GAME 502')">★</span><div class="box"></div><span>GAME 502</span></div>
+<div class="slot" id="slot-503"><span class="card-star" onclick="toggleStar(this, 'slot-503', 'GAME 503')">★</span><div class="box"></div><span>GAME 503</span></div>
+<div class="slot" id="slot-504"><span class="card-star" onclick="toggleStar(this, 'slot-504', 'GAME 504')">★</span><div class="box"></div><span>GAME 504</span></div>
+<div class="slot" id="slot-505"><span class="card-star" onclick="toggleStar(this, 'slot-505', 'GAME 505')">★</span><div class="box"></div><span>GAME 505</span></div>
+<div class="slot" id="slot-506"><span class="card-star" onclick="toggleStar(this, 'slot-506', 'GAME 506')">★</span><div class="box"></div><span>GAME 506</span></div>
+<div class="slot" id="slot-507"><span class="card-star" onclick="toggleStar(this, 'slot-507', 'GAME 507')">★</span><div class="box"></div><span>GAME 507</span></div>
+<div class="slot" id="slot-508"><span class="card-star" onclick="toggleStar(this, 'slot-508', 'GAME 508')">★</span><div class="box"></div><span>GAME 508</span></div>
+<div class="slot" id="slot-509"><span class="card-star" onclick="toggleStar(this, 'slot-509', 'GAME 509')">★</span><div class="box"></div><span>GAME 509</span></div>
+<div class="slot" id="slot-510"><span class="card-star" onclick="toggleStar(this, 'slot-510', 'GAME 510')">★</span><div class="box"></div><span>GAME 510</span></div>
+<div class="slot" id="slot-511"><span class="card-star" onclick="toggleStar(this, 'slot-511', 'GAME 511')">★</span><div class="box"></div><span>GAME 511</span></div>
+<div class="slot" id="slot-512"><span class="card-star" onclick="toggleStar(this, 'slot-512', 'GAME 512')">★</span><div class="box"></div><span>GAME 512</span></div>
+<div class="slot" id="slot-513"><span class="card-star" onclick="toggleStar(this, 'slot-513', 'GAME 513')">★</span><div class="box"></div><span>GAME 513</span></div>
+<div class="slot" id="slot-514"><span class="card-star" onclick="toggleStar(this, 'slot-514', 'GAME 514')">★</span><div class="box"></div><span>GAME 514</span></div>
+<div class="slot" id="slot-515"><span class="card-star" onclick="toggleStar(this, 'slot-515', 'GAME 515')">★</span><div class="box"></div><span>GAME 515</span></div>
+<div class="slot" id="slot-516"><span class="card-star" onclick="toggleStar(this, 'slot-516', 'GAME 516')">★</span><div class="box"></div><span>GAME 516</span></div>
+<div class="slot" id="slot-517"><span class="card-star" onclick="toggleStar(this, 'slot-517', 'GAME 517')">★</span><div class="box"></div><span>GAME 517</span></div>
+<div class="slot" id="slot-518"><span class="card-star" onclick="toggleStar(this, 'slot-518', 'GAME 518')">★</span><div class="box"></div><span>GAME 518</span></div>
+<div class="slot" id="slot-519"><span class="card-star" onclick="toggleStar(this, 'slot-519', 'GAME 519')">★</span><div class="box"></div><span>GAME 519</span></div>
+<div class="slot" id="slot-520"><span class="card-star" onclick="toggleStar(this, 'slot-520', 'GAME 520')">★</span><div class="box"></div><span>GAME 520</span></div>
+<div class="slot" id="slot-521"><span class="card-star" onclick="toggleStar(this, 'slot-521', 'GAME 521')">★</span><div class="box"></div><span>GAME 521</span></div>
+<div class="slot" id="slot-522"><span class="card-star" onclick="toggleStar(this, 'slot-522', 'GAME 522')">★</span><div class="box"></div><span>GAME 522</span></div>
+<div class="slot" id="slot-523"><span class="card-star" onclick="toggleStar(this, 'slot-523', 'GAME 523')">★</span><div class="box"></div><span>GAME 523</span></div>
+<div class="slot" id="slot-524"><span class="card-star" onclick="toggleStar(this, 'slot-524', 'GAME 524')">★</span><div class="box"></div><span>GAME 524</span></div>
+<div class="slot" id="slot-525"><span class="card-star" onclick="toggleStar(this, 'slot-525', 'GAME 525')">★</span><div class="box"></div><span>GAME 525</span></div>
+<div class="slot" id="slot-526"><span class="card-star" onclick="toggleStar(this, 'slot-526', 'GAME 526')">★</span><div class="box"></div><span>GAME 526</span></div>
+<div class="slot" id="slot-527"><span class="card-star" onclick="toggleStar(this, 'slot-527', 'GAME 527')">★</span><div class="box"></div><span>GAME 527</span></div>
+<div class="slot" id="slot-528"><span class="card-star" onclick="toggleStar(this, 'slot-528', 'GAME 528')">★</span><div class="box"></div><span>GAME 528</span></div>
+<div class="slot" id="slot-529"><span class="card-star" onclick="toggleStar(this, 'slot-529', 'GAME 529')">★</span><div class="box"></div><span>GAME 529</span></div>
+<div class="slot" id="slot-530"><span class="card-star" onclick="toggleStar(this, 'slot-530', 'GAME 530')">★</span><div class="box"></div><span>GAME 530</span></div>
+<div class="slot" id="slot-531"><span class="card-star" onclick="toggleStar(this, 'slot-531', 'GAME 531')">★</span><div class="box"></div><span>GAME 531</span></div>
+<div class="slot" id="slot-532"><span class="card-star" onclick="toggleStar(this, 'slot-532', 'GAME 532')">★</span><div class="box"></div><span>GAME 532</span></div>
+<div class="slot" id="slot-533"><span class="card-star" onclick="toggleStar(this, 'slot-533', 'GAME 533')">★</span><div class="box"></div><span>GAME 533</span></div>
+<div class="slot" id="slot-534"><span class="card-star" onclick="toggleStar(this, 'slot-534', 'GAME 534')">★</span><div class="box"></div><span>GAME 534</span></div>
+<div class="slot" id="slot-535"><span class="card-star" onclick="toggleStar(this, 'slot-535', 'GAME 535')">★</span><div class="box"></div><span>GAME 535</span></div>
+<div class="slot" id="slot-536"><span class="card-star" onclick="toggleStar(this, 'slot-536', 'GAME 536')">★</span><div class="box"></div><span>GAME 536</span></div>
+<div class="slot" id="slot-537"><span class="card-star" onclick="toggleStar(this, 'slot-537', 'GAME 537')">★</span><div class="box"></div><span>GAME 537</span></div>
+<div class="slot" id="slot-538"><span class="card-star" onclick="toggleStar(this, 'slot-538', 'GAME 538')">★</span><div class="box"></div><span>GAME 538</span></div>
+<div class="slot" id="slot-539"><span class="card-star" onclick="toggleStar(this, 'slot-539', 'GAME 539')">★</span><div class="box"></div><span>GAME 539</span></div>
+<div class="slot" id="slot-540"><span class="card-star" onclick="toggleStar(this, 'slot-540', 'GAME 540')">★</span><div class="box"></div><span>GAME 540</span></div>
+<div class="slot" id="slot-541"><span class="card-star" onclick="toggleStar(this, 'slot-541', 'GAME 541')">★</span><div class="box"></div><span>GAME 541</span></div>
+<div class="slot" id="slot-542"><span class="card-star" onclick="toggleStar(this, 'slot-542', 'GAME 542')">★</span><div class="box"></div><span>GAME 542</span></div>
+<div class="slot" id="slot-543"><span class="card-star" onclick="toggleStar(this, 'slot-543', 'GAME 543')">★</span><div class="box"></div><span>GAME 543</span></div>
+<div class="slot" id="slot-544"><span class="card-star" onclick="toggleStar(this, 'slot-544', 'GAME 544')">★</span><div class="box"></div><span>GAME 544</span></div>
+<div class="slot" id="slot-545"><span class="card-star" onclick="toggleStar(this, 'slot-545', 'GAME 545')">★</span><div class="box"></div><span>GAME 545</span></div>
+<div class="slot" id="slot-546"><span class="card-star" onclick="toggleStar(this, 'slot-546', 'GAME 546')">★</span><div class="box"></div><span>GAME 546</span></div>
+<div class="slot" id="slot-547"><span class="card-star" onclick="toggleStar(this, 'slot-547', 'GAME 547')">★</span><div class="box"></div><span>GAME 547</span></div>
+<div class="slot" id="slot-548"><span class="card-star" onclick="toggleStar(this, 'slot-548', 'GAME 548')">★</span><div class="box"></div><span>GAME 548</span></div>
+<div class="slot" id="slot-549"><span class="card-star" onclick="toggleStar(this, 'slot-549', 'GAME 549')">★</span><div class="box"></div><span>GAME 549</span></div>
+<div class="slot" id="slot-550"><span class="card-star" onclick="toggleStar(this, 'slot-550', 'GAME 550')">★</span><div class="box"></div><span>GAME 550</span></div>
+<div class="slot" id="slot-551"><span class="card-star" onclick="toggleStar(this, 'slot-551', 'GAME 551')">★</span><div class="box"></div><span>GAME 551</span></div>
+<div class="slot" id="slot-552"><span class="card-star" onclick="toggleStar(this, 'slot-552', 'GAME 552')">★</span><div class="box"></div><span>GAME 552</span></div>
+<div class="slot" id="slot-553"><span class="card-star" onclick="toggleStar(this, 'slot-553', 'GAME 553')">★</span><div class="box"></div><span>GAME 553</span></div>
+<div class="slot" id="slot-554"><span class="card-star" onclick="toggleStar(this, 'slot-554', 'GAME 554')">★</span><div class="box"></div><span>GAME 554</span></div>
+<div class="slot" id="slot-555"><span class="card-star" onclick="toggleStar(this, 'slot-555', 'GAME 555')">★</span><div class="box"></div><span>GAME 555</span></div>
+<div class="slot" id="slot-556"><span class="card-star" onclick="toggleStar(this, 'slot-556', 'GAME 556')">★</span><div class="box"></div><span>GAME 556</span></div>
+<div class="slot" id="slot-557"><span class="card-star" onclick="toggleStar(this, 'slot-557', 'GAME 557')">★</span><div class="box"></div><span>GAME 557</span></div>
+<div class="slot" id="slot-558"><span class="card-star" onclick="toggleStar(this, 'slot-558', 'GAME 558')">★</span><div class="box"></div><span>GAME 558</span></div>
+<div class="slot" id="slot-559"><span class="card-star" onclick="toggleStar(this, 'slot-559', 'GAME 559')">★</span><div class="box"></div><span>GAME 559</span></div>
+<div class="slot" id="slot-560"><span class="card-star" onclick="toggleStar(this, 'slot-560', 'GAME 560')">★</span><div class="box"></div><span>GAME 560</span></div>
+<div class="slot" id="slot-561"><span class="card-star" onclick="toggleStar(this, 'slot-561', 'GAME 561')">★</span><div class="box"></div><span>GAME 561</span></div>
+<div class="slot" id="slot-562"><span class="card-star" onclick="toggleStar(this, 'slot-562', 'GAME 562')">★</span><div class="box"></div><span>GAME 562</span></div>
+<div class="slot" id="slot-563"><span class="card-star" onclick="toggleStar(this, 'slot-563', 'GAME 563')">★</span><div class="box"></div><span>GAME 563</span></div>
+<div class="slot" id="slot-564"><span class="card-star" onclick="toggleStar(this, 'slot-564', 'GAME 564')">★</span><div class="box"></div><span>GAME 564</span></div>
+<div class="slot" id="slot-565"><span class="card-star" onclick="toggleStar(this, 'slot-565', 'GAME 565')">★</span><div class="box"></div><span>GAME 565</span></div>
+<div class="slot" id="slot-566"><span class="card-star" onclick="toggleStar(this, 'slot-566', 'GAME 566')">★</span><div class="box"></div><span>GAME 566</span></div>
+<div class="slot" id="slot-567"><span class="card-star" onclick="toggleStar(this, 'slot-567', 'GAME 567')">★</span><div class="box"></div><span>GAME 567</span></div>
+<div class="slot" id="slot-568"><span class="card-star" onclick="toggleStar(this, 'slot-568', 'GAME 568')">★</span><div class="box"></div><span>GAME 568</span></div>
+<div class="slot" id="slot-569"><span class="card-star" onclick="toggleStar(this, 'slot-569', 'GAME 569')">★</span><div class="box"></div><span>GAME 569</span></div>
+<div class="slot" id="slot-570"><span class="card-star" onclick="toggleStar(this, 'slot-570', 'GAME 570')">★</span><div class="box"></div><span>GAME 570</span></div>
+<div class="slot" id="slot-571"><span class="card-star" onclick="toggleStar(this, 'slot-571', 'GAME 571')">★</span><div class="box"></div><span>GAME 571</span></div>
+<div class="slot" id="slot-572"><span class="card-star" onclick="toggleStar(this, 'slot-572', 'GAME 572')">★</span><div class="box"></div><span>GAME 572</span></div>
+<div class="slot" id="slot-573"><span class="card-star" onclick="toggleStar(this, 'slot-573', 'GAME 573')">★</span><div class="box"></div><span>GAME 573</span></div>
+<div class="slot" id="slot-574"><span class="card-star" onclick="toggleStar(this, 'slot-574', 'GAME 574')">★</span><div class="box"></div><span>GAME 574</span></div>
+<div class="slot" id="slot-575"><span class="card-star" onclick="toggleStar(this, 'slot-575', 'GAME 575')">★</span><div class="box"></div><span>GAME 575</span></div>
+<div class="slot" id="slot-576"><span class="card-star" onclick="toggleStar(this, 'slot-576', 'GAME 576')">★</span><div class="box"></div><span>GAME 576</span></div>
+<div class="slot" id="slot-577"><span class="card-star" onclick="toggleStar(this, 'slot-577', 'GAME 577')">★</span><div class="box"></div><span>GAME 577</span></div>
+<div class="slot" id="slot-578"><span class="card-star" onclick="toggleStar(this, 'slot-578', 'GAME 578')">★</span><div class="box"></div><span>GAME 578</span></div>
+<div class="slot" id="slot-579"><span class="card-star" onclick="toggleStar(this, 'slot-579', 'GAME 579')">★</span><div class="box"></div><span>GAME 579</span></div>
+<div class="slot" id="slot-580"><span class="card-star" onclick="toggleStar(this, 'slot-580', 'GAME 580')">★</span><div class="box"></div><span>GAME 580</span></div>
+<div class="slot" id="slot-581"><span class="card-star" onclick="toggleStar(this, 'slot-581', 'GAME 581')">★</span><div class="box"></div><span>GAME 581</span></div>
+<div class="slot" id="slot-582"><span class="card-star" onclick="toggleStar(this, 'slot-582', 'GAME 582')">★</span><div class="box"></div><span>GAME 582</span></div>
+<div class="slot" id="slot-583"><span class="card-star" onclick="toggleStar(this, 'slot-583', 'GAME 583')">★</span><div class="box"></div><span>GAME 583</span></div>
+<div class="slot" id="slot-584"><span class="card-star" onclick="toggleStar(this, 'slot-584', 'GAME 584')">★</span><div class="box"></div><span>GAME 584</span></div>
+<div class="slot" id="slot-585"><span class="card-star" onclick="toggleStar(this, 'slot-585', 'GAME 585')">★</span><div class="box"></div><span>GAME 585</span></div>
+<div class="slot" id="slot-586"><span class="card-star" onclick="toggleStar(this, 'slot-586', 'GAME 586')">★</span><div class="box"></div><span>GAME 586</span></div>
+<div class="slot" id="slot-587"><span class="card-star" onclick="toggleStar(this, 'slot-587', 'GAME 587')">★</span><div class="box"></div><span>GAME 587</span></div>
+<div class="slot" id="slot-588"><span class="card-star" onclick="toggleStar(this, 'slot-588', 'GAME 588')">★</span><div class="box"></div><span>GAME 588</span></div>
+<div class="slot" id="slot-589"><span class="card-star" onclick="toggleStar(this, 'slot-589', 'GAME 589')">★</span><div class="box"></div><span>GAME 589</span></div>
+<div class="slot" id="slot-590"><span class="card-star" onclick="toggleStar(this, 'slot-590', 'GAME 590')">★</span><div class="box"></div><span>GAME 590</span></div>
+<div class="slot" id="slot-591"><span class="card-star" onclick="toggleStar(this, 'slot-591', 'GAME 591')">★</span><div class="box"></div><span>GAME 591</span></div>
+<div class="slot" id="slot-592"><span class="card-star" onclick="toggleStar(this, 'slot-592', 'GAME 592')">★</span><div class="box"></div><span>GAME 592</span></div>
+<div class="slot" id="slot-593"><span class="card-star" onclick="toggleStar(this, 'slot-593', 'GAME 593')">★</span><div class="box"></div><span>GAME 593</span></div>
+<div class="slot" id="slot-594"><span class="card-star" onclick="toggleStar(this, 'slot-594', 'GAME 594')">★</span><div class="box"></div><span>GAME 594</span></div>
+<div class="slot" id="slot-595"><span class="card-star" onclick="toggleStar(this, 'slot-595', 'GAME 595')">★</span><div class="box"></div><span>GAME 595</span></div>
+<div class="slot" id="slot-596"><span class="card-star" onclick="toggleStar(this, 'slot-596', 'GAME 596')">★</span><div class="box"></div><span>GAME 596</span></div>
+<div class="slot" id="slot-597"><span class="card-star" onclick="toggleStar(this, 'slot-597', 'GAME 597')">★</span><div class="box"></div><span>GAME 597</span></div>
+<div class="slot" id="slot-598"><span class="card-star" onclick="toggleStar(this, 'slot-598', 'GAME 598')">★</span><div class="box"></div><span>GAME 598</span></div>
+<div class="slot" id="slot-599"><span class="card-star" onclick="toggleStar(this, 'slot-599', 'GAME 599')">★</span><div class="box"></div><span>GAME 599</span></div>
+<div class="slot" id="slot-600"><span class="card-star" onclick="toggleStar(this, 'slot-600', 'GAME 600')">★</span><div class="box"></div><span>GAME 600</span></div>
+          <div class="slot" id="slot-601"><span class="card-star" onclick="toggleStar(this, 'slot-601', 'GAME 601')">★</span><div class="box"></div><span>GAME 601</span></div>
+<div class="slot" id="slot-602"><span class="card-star" onclick="toggleStar(this, 'slot-602', 'GAME 602')">★</span><div class="box"></div><span>GAME 602</span></div>
+<div class="slot" id="slot-603"><span class="card-star" onclick="toggleStar(this, 'slot-603', 'GAME 603')">★</span><div class="box"></div><span>GAME 603</span></div>
+<div class="slot" id="slot-604"><span class="card-star" onclick="toggleStar(this, 'slot-604', 'GAME 604')">★</span><div class="box"></div><span>GAME 604</span></div>
+<div class="slot" id="slot-605"><span class="card-star" onclick="toggleStar(this, 'slot-605', 'GAME 605')">★</span><div class="box"></div><span>GAME 605</span></div>
+<div class="slot" id="slot-606"><span class="card-star" onclick="toggleStar(this, 'slot-606', 'GAME 606')">★</span><div class="box"></div><span>GAME 606</span></div>
+<div class="slot" id="slot-607"><span class="card-star" onclick="toggleStar(this, 'slot-607', 'GAME 607')">★</span><div class="box"></div><span>GAME 607</span></div>
+<div class="slot" id="slot-608"><span class="card-star" onclick="toggleStar(this, 'slot-608', 'GAME 608')">★</span><div class="box"></div><span>GAME 608</span></div>
+<div class="slot" id="slot-609"><span class="card-star" onclick="toggleStar(this, 'slot-609', 'GAME 609')">★</span><div class="box"></div><span>GAME 609</span></div>
+<div class="slot" id="slot-610"><span class="card-star" onclick="toggleStar(this, 'slot-610', 'GAME 610')">★</span><div class="box"></div><span>GAME 610</span></div>
+<div class="slot" id="slot-611"><span class="card-star" onclick="toggleStar(this, 'slot-611', 'GAME 611')">★</span><div class="box"></div><span>GAME 611</span></div>
+<div class="slot" id="slot-612"><span class="card-star" onclick="toggleStar(this, 'slot-612', 'GAME 612')">★</span><div class="box"></div><span>GAME 612</span></div>
+<div class="slot" id="slot-613"><span class="card-star" onclick="toggleStar(this, 'slot-613', 'GAME 613')">★</span><div class="box"></div><span>GAME 613</span></div>
+<div class="slot" id="slot-614"><span class="card-star" onclick="toggleStar(this, 'slot-614', 'GAME 614')">★</span><div class="box"></div><span>GAME 614</span></div>
+<div class="slot" id="slot-615"><span class="card-star" onclick="toggleStar(this, 'slot-615', 'GAME 615')">★</span><div class="box"></div><span>GAME 615</span></div>
+<div class="slot" id="slot-616"><span class="card-star" onclick="toggleStar(this, 'slot-616', 'GAME 616')">★</span><div class="box"></div><span>GAME 616</span></div>
+<div class="slot" id="slot-617"><span class="card-star" onclick="toggleStar(this, 'slot-617', 'GAME 617')">★</span><div class="box"></div><span>GAME 617</span></div>
+<div class="slot" id="slot-618"><span class="card-star" onclick="toggleStar(this, 'slot-618', 'GAME 618')">★</span><div class="box"></div><span>GAME 618</span></div>
+<div class="slot" id="slot-619"><span class="card-star" onclick="toggleStar(this, 'slot-619', 'GAME 619')">★</span><div class="box"></div><span>GAME 619</span></div>
+<div class="slot" id="slot-620"><span class="card-star" onclick="toggleStar(this, 'slot-620', 'GAME 620')">★</span><div class="box"></div><span>GAME 620</span></div>
+<div class="slot" id="slot-621"><span class="card-star" onclick="toggleStar(this, 'slot-621', 'GAME 621')">★</span><div class="box"></div><span>GAME 621</span></div>
+<div class="slot" id="slot-622"><span class="card-star" onclick="toggleStar(this, 'slot-622', 'GAME 622')">★</span><div class="box"></div><span>GAME 622</span></div>
+<div class="slot" id="slot-623"><span class="card-star" onclick="toggleStar(this, 'slot-623', 'GAME 623')">★</span><div class="box"></div><span>GAME 623</span></div>
+<div class="slot" id="slot-624"><span class="card-star" onclick="toggleStar(this, 'slot-624', 'GAME 624')">★</span><div class="box"></div><span>GAME 624</span></div>
+<div class="slot" id="slot-625"><span class="card-star" onclick="toggleStar(this, 'slot-625', 'GAME 625')">★</span><div class="box"></div><span>GAME 625</span></div>
+<div class="slot" id="slot-626"><span class="card-star" onclick="toggleStar(this, 'slot-626', 'GAME 626')">★</span><div class="box"></div><span>GAME 626</span></div>
+<div class="slot" id="slot-627"><span class="card-star" onclick="toggleStar(this, 'slot-627', 'GAME 627')">★</span><div class="box"></div><span>GAME 627</span></div>
+<div class="slot" id="slot-628"><span class="card-star" onclick="toggleStar(this, 'slot-628', 'GAME 628')">★</span><div class="box"></div><span>GAME 628</span></div>
+<div class="slot" id="slot-629"><span class="card-star" onclick="toggleStar(this, 'slot-629', 'GAME 629')">★</span><div class="box"></div><span>GAME 629</span></div>
+<div class="slot" id="slot-630"><span class="card-star" onclick="toggleStar(this, 'slot-630', 'GAME 630')">★</span><div class="box"></div><span>GAME 630</span></div>
+<div class="slot" id="slot-631"><span class="card-star" onclick="toggleStar(this, 'slot-631', 'GAME 631')">★</span><div class="box"></div><span>GAME 631</span></div>
+<div class="slot" id="slot-632"><span class="card-star" onclick="toggleStar(this, 'slot-632', 'GAME 632')">★</span><div class="box"></div><span>GAME 632</span></div>
+<div class="slot" id="slot-633"><span class="card-star" onclick="toggleStar(this, 'slot-633', 'GAME 633')">★</span><div class="box"></div><span>GAME 633</span></div>
+<div class="slot" id="slot-634"><span class="card-star" onclick="toggleStar(this, 'slot-634', 'GAME 634')">★</span><div class="box"></div><span>GAME 634</span></div>
+<div class="slot" id="slot-635"><span class="card-star" onclick="toggleStar(this, 'slot-635', 'GAME 635')">★</span><div class="box"></div><span>GAME 635</span></div>
+<div class="slot" id="slot-636"><span class="card-star" onclick="toggleStar(this, 'slot-636', 'GAME 636')">★</span><div class="box"></div><span>GAME 636</span></div>
+<div class="slot" id="slot-637"><span class="card-star" onclick="toggleStar(this, 'slot-637', 'GAME 637')">★</span><div class="box"></div><span>GAME 637</span></div>
+<div class="slot" id="slot-638"><span class="card-star" onclick="toggleStar(this, 'slot-638', 'GAME 638')">★</span><div class="box"></div><span>GAME 638</span></div>
+<div class="slot" id="slot-639"><span class="card-star" onclick="toggleStar(this, 'slot-639', 'GAME 639')">★</span><div class="box"></div><span>GAME 639</span></div>
+<div class="slot" id="slot-640"><span class="card-star" onclick="toggleStar(this, 'slot-640', 'GAME 640')">★</span><div class="box"></div><span>GAME 640</span></div>
+<div class="slot" id="slot-641"><span class="card-star" onclick="toggleStar(this, 'slot-641', 'GAME 641')">★</span><div class="box"></div><span>GAME 641</span></div>
+<div class="slot" id="slot-642"><span class="card-star" onclick="toggleStar(this, 'slot-642', 'GAME 642')">★</span><div class="box"></div><span>GAME 642</span></div>
+<div class="slot" id="slot-643"><span class="card-star" onclick="toggleStar(this, 'slot-643', 'GAME 643')">★</span><div class="box"></div><span>GAME 643</span></div>
+<div class="slot" id="slot-644"><span class="card-star" onclick="toggleStar(this, 'slot-644', 'GAME 644')">★</span><div class="box"></div><span>GAME 644</span></div>
+<div class="slot" id="slot-645"><span class="card-star" onclick="toggleStar(this, 'slot-645', 'GAME 645')">★</span><div class="box"></div><span>GAME 645</span></div>
+<div class="slot" id="slot-646"><span class="card-star" onclick="toggleStar(this, 'slot-646', 'GAME 646')">★</span><div class="box"></div><span>GAME 646</span></div>
+<div class="slot" id="slot-647"><span class="card-star" onclick="toggleStar(this, 'slot-647', 'GAME 647')">★</span><div class="box"></div><span>GAME 647</span></div>
+<div class="slot" id="slot-648"><span class="card-star" onclick="toggleStar(this, 'slot-648', 'GAME 648')">★</span><div class="box"></div><span>GAME 648</span></div>
+<div class="slot" id="slot-649"><span class="card-star" onclick="toggleStar(this, 'slot-649', 'GAME 649')">★</span><div class="box"></div><span>GAME 649</span></div>
+<div class="slot" id="slot-650"><span class="card-star" onclick="toggleStar(this, 'slot-650', 'GAME 650')">★</span><div class="box"></div><span>GAME 650</span></div>
+<div class="slot" id="slot-651"><span class="card-star" onclick="toggleStar(this, 'slot-651', 'GAME 651')">★</span><div class="box"></div><span>GAME 651</span></div>
+<div class="slot" id="slot-652"><span class="card-star" onclick="toggleStar(this, 'slot-652', 'GAME 652')">★</span><div class="box"></div><span>GAME 652</span></div>
+<div class="slot" id="slot-653"><span class="card-star" onclick="toggleStar(this, 'slot-653', 'GAME 653')">★</span><div class="box"></div><span>GAME 653</span></div>
+<div class="slot" id="slot-654"><span class="card-star" onclick="toggleStar(this, 'slot-654', 'GAME 654')">★</span><div class="box"></div><span>GAME 654</span></div>
+<div class="slot" id="slot-655"><span class="card-star" onclick="toggleStar(this, 'slot-655', 'GAME 655')">★</span><div class="box"></div><span>GAME 655</span></div>
+<div class="slot" id="slot-656"><span class="card-star" onclick="toggleStar(this, 'slot-656', 'GAME 656')">★</span><div class="box"></div><span>GAME 656</span></div>
+<div class="slot" id="slot-657"><span class="card-star" onclick="toggleStar(this, 'slot-657', 'GAME 657')">★</span><div class="box"></div><span>GAME 657</span></div>
+<div class="slot" id="slot-658"><span class="card-star" onclick="toggleStar(this, 'slot-658', 'GAME 658')">★</span><div class="box"></div><span>GAME 658</span></div>
+<div class="slot" id="slot-659"><span class="card-star" onclick="toggleStar(this, 'slot-659', 'GAME 659')">★</span><div class="box"></div><span>GAME 659</span></div>
+<div class="slot" id="slot-660"><span class="card-star" onclick="toggleStar(this, 'slot-660', 'GAME 660')">★</span><div class="box"></div><span>GAME 660</span></div>
+<div class="slot" id="slot-661"><span class="card-star" onclick="toggleStar(this, 'slot-661', 'GAME 661')">★</span><div class="box"></div><span>GAME 661</span></div>
+<div class="slot" id="slot-662"><span class="card-star" onclick="toggleStar(this, 'slot-662', 'GAME 662')">★</span><div class="box"></div><span>GAME 662</span></div>
+<div class="slot" id="slot-663"><span class="card-star" onclick="toggleStar(this, 'slot-663', 'GAME 663')">★</span><div class="box"></div><span>GAME 663</span></div>
+<div class="slot" id="slot-664"><span class="card-star" onclick="toggleStar(this, 'slot-664', 'GAME 664')">★</span><div class="box"></div><span>GAME 664</span></div>
+<div class="slot" id="slot-665"><span class="card-star" onclick="toggleStar(this, 'slot-665', 'GAME 665')">★</span><div class="box"></div><span>GAME 665</span></div>
+<div class="slot" id="slot-666"><span class="card-star" onclick="toggleStar(this, 'slot-666', 'GAME 666')">★</span><div class="box"></div><span>GAME 666</span></div>
+<div class="slot" id="slot-667"><span class="card-star" onclick="toggleStar(this, 'slot-667', 'GAME 667')">★</span><div class="box"></div><span>GAME 667</span></div>
+<div class="slot" id="slot-668"><span class="card-star" onclick="toggleStar(this, 'slot-668', 'GAME 668')">★</span><div class="box"></div><span>GAME 668</span></div>
+<div class="slot" id="slot-669"><span class="card-star" onclick="toggleStar(this, 'slot-669', 'GAME 669')">★</span><div class="box"></div><span>GAME 669</span></div>
+<div class="slot" id="slot-670"><span class="card-star" onclick="toggleStar(this, 'slot-670', 'GAME 670')">★</span><div class="box"></div><span>GAME 670</span></div>
+<div class="slot" id="slot-671"><span class="card-star" onclick="toggleStar(this, 'slot-671', 'GAME 671')">★</span><div class="box"></div><span>GAME 671</span></div>
+<div class="slot" id="slot-672"><span class="card-star" onclick="toggleStar(this, 'slot-672', 'GAME 672')">★</span><div class="box"></div><span>GAME 672</span></div>
+<div class="slot" id="slot-673"><span class="card-star" onclick="toggleStar(this, 'slot-673', 'GAME 673')">★</span><div class="box"></div><span>GAME 673</span></div>
+<div class="slot" id="slot-674"><span class="card-star" onclick="toggleStar(this, 'slot-674', 'GAME 674')">★</span><div class="box"></div><span>GAME 674</span></div>
+<div class="slot" id="slot-675"><span class="card-star" onclick="toggleStar(this, 'slot-675', 'GAME 675')">★</span><div class="box"></div><span>GAME 675</span></div>
+<div class="slot" id="slot-676"><span class="card-star" onclick="toggleStar(this, 'slot-676', 'GAME 676')">★</span><div class="box"></div><span>GAME 676</span></div>
+<div class="slot" id="slot-677"><span class="card-star" onclick="toggleStar(this, 'slot-677', 'GAME 677')">★</span><div class="box"></div><span>GAME 677</span></div>
+<div class="slot" id="slot-678"><span class="card-star" onclick="toggleStar(this, 'slot-678', 'GAME 678')">★</span><div class="box"></div><span>GAME 678</span></div>
+<div class="slot" id="slot-679"><span class="card-star" onclick="toggleStar(this, 'slot-679', 'GAME 679')">★</span><div class="box"></div><span>GAME 679</span></div>
+<div class="slot" id="slot-680"><span class="card-star" onclick="toggleStar(this, 'slot-680', 'GAME 680')">★</span><div class="box"></div><span>GAME 680</span></div>
+<div class="slot" id="slot-681"><span class="card-star" onclick="toggleStar(this, 'slot-681', 'GAME 681')">★</span><div class="box"></div><span>GAME 681</span></div>
+<div class="slot" id="slot-682"><span class="card-star" onclick="toggleStar(this, 'slot-682', 'GAME 682')">★</span><div class="box"></div><span>GAME 682</span></div>
+<div class="slot" id="slot-683"><span class="card-star" onclick="toggleStar(this, 'slot-683', 'GAME 683')">★</span><div class="box"></div><span>GAME 683</span></div>
+<div class="slot" id="slot-684"><span class="card-star" onclick="toggleStar(this, 'slot-684', 'GAME 684')">★</span><div class="box"></div><span>GAME 684</span></div>
+<div class="slot" id="slot-685"><span class="card-star" onclick="toggleStar(this, 'slot-685', 'GAME 685')">★</span><div class="box"></div><span>GAME 685</span></div>
+<div class="slot" id="slot-686"><span class="card-star" onclick="toggleStar(this, 'slot-686', 'GAME 686')">★</span><div class="box"></div><span>GAME 686</span></div>
+<div class="slot" id="slot-687"><span class="card-star" onclick="toggleStar(this, 'slot-687', 'GAME 687')">★</span><div class="box"></div><span>GAME 687</span></div>
+<div class="slot" id="slot-688"><span class="card-star" onclick="toggleStar(this, 'slot-688', 'GAME 688')">★</span><div class="box"></div><span>GAME 688</span></div>
+<div class="slot" id="slot-689"><span class="card-star" onclick="toggleStar(this, 'slot-689', 'GAME 689')">★</span><div class="box"></div><span>GAME 689</span></div>
+<div class="slot" id="slot-690"><span class="card-star" onclick="toggleStar(this, 'slot-690', 'GAME 690')">★</span><div class="box"></div><span>GAME 690</span></div>
+<div class="slot" id="slot-691"><span class="card-star" onclick="toggleStar(this, 'slot-691', 'GAME 691')">★</span><div class="box"></div><span>GAME 691</span></div>
+<div class="slot" id="slot-692"><span class="card-star" onclick="toggleStar(this, 'slot-692', 'GAME 692')">★</span><div class="box"></div><span>GAME 692</span></div>
+<div class="slot" id="slot-693"><span class="card-star" onclick="toggleStar(this, 'slot-693', 'GAME 693')">★</span><div class="box"></div><span>GAME 693</span></div>
+<div class="slot" id="slot-694"><span class="card-star" onclick="toggleStar(this, 'slot-694', 'GAME 694')">★</span><div class="box"></div><span>GAME 694</span></div>
+<div class="slot" id="slot-695"><span class="card-star" onclick="toggleStar(this, 'slot-695', 'GAME 695')">★</span><div class="box"></div><span>GAME 695</span></div>
+<div class="slot" id="slot-696"><span class="card-star" onclick="toggleStar(this, 'slot-696', 'GAME 696')">★</span><div class="box"></div><span>GAME 696</span></div>
+<div class="slot" id="slot-697"><span class="card-star" onclick="toggleStar(this, 'slot-697', 'GAME 697')">★</span><div class="box"></div><span>GAME 697</span></div>
+<div class="slot" id="slot-698"><span class="card-star" onclick="toggleStar(this, 'slot-698', 'GAME 698')">★</span><div class="box"></div><span>GAME 698</span></div>
+<div class="slot" id="slot-699"><span class="card-star" onclick="toggleStar(this, 'slot-699', 'GAME 699')">★</span><div class="box"></div><span>GAME 699</span></div>
+<div class="slot" id="slot-700"><span class="card-star" onclick="toggleStar(this, 'slot-700', 'GAME 700')">★</span><div class="box"></div><span>GAME 700</span></div>
+<div class="slot" id="slot-701"><span class="card-star" onclick="toggleStar(this, 'slot-701', 'GAME 701')">★</span><div class="box"></div><span>GAME 701</span></div>
+<div class="slot" id="slot-702"><span class="card-star" onclick="toggleStar(this, 'slot-702', 'GAME 702')">★</span><div class="box"></div><span>GAME 702</span></div>
+<div class="slot" id="slot-703"><span class="card-star" onclick="toggleStar(this, 'slot-703', 'GAME 703')">★</span><div class="box"></div><span>GAME 703</span></div>
+<div class="slot" id="slot-704"><span class="card-star" onclick="toggleStar(this, 'slot-704', 'GAME 704')">★</span><div class="box"></div><span>GAME 704</span></div>
+<div class="slot" id="slot-705"><span class="card-star" onclick="toggleStar(this, 'slot-705', 'GAME 705')">★</span><div class="box"></div><span>GAME 705</span></div>
+<div class="slot" id="slot-706"><span class="card-star" onclick="toggleStar(this, 'slot-706', 'GAME 706')">★</span><div class="box"></div><span>GAME 706</span></div>
+<div class="slot" id="slot-707"><span class="card-star" onclick="toggleStar(this, 'slot-707', 'GAME 707')">★</span><div class="box"></div><span>GAME 707</span></div>
+<div class="slot" id="slot-708"><span class="card-star" onclick="toggleStar(this, 'slot-708', 'GAME 708')">★</span><div class="box"></div><span>GAME 708</span></div>
+<div class="slot" id="slot-709"><span class="card-star" onclick="toggleStar(this, 'slot-709', 'GAME 709')">★</span><div class="box"></div><span>GAME 709</span></div>
+<div class="slot" id="slot-710"><span class="card-star" onclick="toggleStar(this, 'slot-710', 'GAME 710')">★</span><div class="box"></div><span>GAME 710</span></div>
+<div class="slot" id="slot-711"><span class="card-star" onclick="toggleStar(this, 'slot-711', 'GAME 711')">★</span><div class="box"></div><span>GAME 711</span></div>
+<div class="slot" id="slot-712"><span class="card-star" onclick="toggleStar(this, 'slot-712', 'GAME 712')">★</span><div class="box"></div><span>GAME 712</span></div>
+<div class="slot" id="slot-713"><span class="card-star" onclick="toggleStar(this, 'slot-713', 'GAME 713')">★</span><div class="box"></div><span>GAME 713</span></div>
+<div class="slot" id="slot-714"><span class="card-star" onclick="toggleStar(this, 'slot-714', 'GAME 714')">★</span><div class="box"></div><span>GAME 714</span></div>
+<div class="slot" id="slot-715"><span class="card-star" onclick="toggleStar(this, 'slot-715', 'GAME 715')">★</span><div class="box"></div><span>GAME 715</span></div>
+<div class="slot" id="slot-716"><span class="card-star" onclick="toggleStar(this, 'slot-716', 'GAME 716')">★</span><div class="box"></div><span>GAME 716</span></div>
+<div class="slot" id="slot-717"><span class="card-star" onclick="toggleStar(this, 'slot-717', 'GAME 717')">★</span><div class="box"></div><span>GAME 717</span></div>
+<div class="slot" id="slot-718"><span class="card-star" onclick="toggleStar(this, 'slot-718', 'GAME 718')">★</span><div class="box"></div><span>GAME 718</span></div>
+<div class="slot" id="slot-719"><span class="card-star" onclick="toggleStar(this, 'slot-719', 'GAME 719')">★</span><div class="box"></div><span>GAME 719</span></div>
+<div class="slot" id="slot-720"><span class="card-star" onclick="toggleStar(this, 'slot-720', 'GAME 720')">★</span><div class="box"></div><span>GAME 720</span></div>
+<div class="slot" id="slot-721"><span class="card-star" onclick="toggleStar(this, 'slot-721', 'GAME 721')">★</span><div class="box"></div><span>GAME 721</span></div>
+<div class="slot" id="slot-722"><span class="card-star" onclick="toggleStar(this, 'slot-722', 'GAME 722')">★</span><div class="box"></div><span>GAME 722</span></div>
+<div class="slot" id="slot-723"><span class="card-star" onclick="toggleStar(this, 'slot-723', 'GAME 723')">★</span><div class="box"></div><span>GAME 723</span></div>
+<div class="slot" id="slot-724"><span class="card-star" onclick="toggleStar(this, 'slot-724', 'GAME 724')">★</span><div class="box"></div><span>GAME 724</span></div>
+<div class="slot" id="slot-725"><span class="card-star" onclick="toggleStar(this, 'slot-725', 'GAME 725')">★</span><div class="box"></div><span>GAME 725</span></div>
+<div class="slot" id="slot-726"><span class="card-star" onclick="toggleStar(this, 'slot-726', 'GAME 726')">★</span><div class="box"></div><span>GAME 726</span></div>
+<div class="slot" id="slot-727"><span class="card-star" onclick="toggleStar(this, 'slot-727', 'GAME 727')">★</span><div class="box"></div><span>GAME 727</span></div>
+<div class="slot" id="slot-728"><span class="card-star" onclick="toggleStar(this, 'slot-728', 'GAME 728')">★</span><div class="box"></div><span>GAME 728</span></div>
+<div class="slot" id="slot-729"><span class="card-star" onclick="toggleStar(this, 'slot-729', 'GAME 729')">★</span><div class="box"></div><span>GAME 729</span></div>
+<div class="slot" id="slot-730"><span class="card-star" onclick="toggleStar(this, 'slot-730', 'GAME 730')">★</span><div class="box"></div><span>GAME 730</span></div>
+<div class="slot" id="slot-731"><span class="card-star" onclick="toggleStar(this, 'slot-731', 'GAME 731')">★</span><div class="box"></div><span>GAME 731</span></div>
+<div class="slot" id="slot-732"><span class="card-star" onclick="toggleStar(this, 'slot-732', 'GAME 732')">★</span><div class="box"></div><span>GAME 732</span></div>
+<div class="slot" id="slot-733"><span class="card-star" onclick="toggleStar(this, 'slot-733', 'GAME 733')">★</span><div class="box"></div><span>GAME 733</span></div>
+<div class="slot" id="slot-734"><span class="card-star" onclick="toggleStar(this, 'slot-734', 'GAME 734')">★</span><div class="box"></div><span>GAME 734</span></div>
+<div class="slot" id="slot-735"><span class="card-star" onclick="toggleStar(this, 'slot-735', 'GAME 735')">★</span><div class="box"></div><span>GAME 735</span></div>
+<div class="slot" id="slot-736"><span class="card-star" onclick="toggleStar(this, 'slot-736', 'GAME 736')">★</span><div class="box"></div><span>GAME 736</span></div>
+<div class="slot" id="slot-737"><span class="card-star" onclick="toggleStar(this, 'slot-737', 'GAME 737')">★</span><div class="box"></div><span>GAME 737</span></div>
+<div class="slot" id="slot-738"><span class="card-star" onclick="toggleStar(this, 'slot-738', 'GAME 738')">★</span><div class="box"></div><span>GAME 738</span></div>
+<div class="slot" id="slot-739"><span class="card-star" onclick="toggleStar(this, 'slot-739', 'GAME 739')">★</span><div class="box"></div><span>GAME 739</span></div>
+<div class="slot" id="slot-740"><span class="card-star" onclick="toggleStar(this, 'slot-740', 'GAME 740')">★</span><div class="box"></div><span>GAME 740</span></div>
+<div class="slot" id="slot-741"><span class="card-star" onclick="toggleStar(this, 'slot-741', 'GAME 741')">★</span><div class="box"></div><span>GAME 741</span></div>
+<div class="slot" id="slot-742"><span class="card-star" onclick="toggleStar(this, 'slot-742', 'GAME 742')">★</span><div class="box"></div><span>GAME 742</span></div>
+<div class="slot" id="slot-743"><span class="card-star" onclick="toggleStar(this, 'slot-743', 'GAME 743')">★</span><div class="box"></div><span>GAME 743</span></div>
+<div class="slot" id="slot-744"><span class="card-star" onclick="toggleStar(this, 'slot-744', 'GAME 744')">★</span><div class="box"></div><span>GAME 744</span></div>
+<div class="slot" id="slot-745"><span class="card-star" onclick="toggleStar(this, 'slot-745', 'GAME 745')">★</span><div class="box"></div><span>GAME 745</span></div>
+<div class="slot" id="slot-746"><span class="card-star" onclick="toggleStar(this, 'slot-746', 'GAME 746')">★</span><div class="box"></div><span>GAME 746</span></div>
+<div class="slot" id="slot-747"><span class="card-star" onclick="toggleStar(this, 'slot-747', 'GAME 747')">★</span><div class="box"></div><span>GAME 747</span></div>
+<div class="slot" id="slot-748"><span class="card-star" onclick="toggleStar(this, 'slot-748', 'GAME 748')">★</span><div class="box"></div><span>GAME 748</span></div>
+<div class="slot" id="slot-749"><span class="card-star" onclick="toggleStar(this, 'slot-749', 'GAME 749')">★</span><div class="box"></div><span>GAME 749</span></div>
+<div class="slot" id="slot-750"><span class="card-star" onclick="toggleStar(this, 'slot-750', 'GAME 750')">★</span><div class="box"></div><span>GAME 750</span></div>
+<div class="slot" id="slot-751"><span class="card-star" onclick="toggleStar(this, 'slot-751', 'GAME 751')">★</span><div class="box"></div><span>GAME 751</span></div>
+<div class="slot" id="slot-752"><span class="card-star" onclick="toggleStar(this, 'slot-752', 'GAME 752')">★</span><div class="box"></div><span>GAME 752</span></div>
+<div class="slot" id="slot-753"><span class="card-star" onclick="toggleStar(this, 'slot-753', 'GAME 753')">★</span><div class="box"></div><span>GAME 753</span></div>
+<div class="slot" id="slot-754"><span class="card-star" onclick="toggleStar(this, 'slot-754', 'GAME 754')">★</span><div class="box"></div><span>GAME 754</span></div>
+<div class="slot" id="slot-755"><span class="card-star" onclick="toggleStar(this, 'slot-755', 'GAME 755')">★</span><div class="box"></div><span>GAME 755</span></div>
+<div class="slot" id="slot-756"><span class="card-star" onclick="toggleStar(this, 'slot-756', 'GAME 756')">★</span><div class="box"></div><span>GAME 756</span></div>
+<div class="slot" id="slot-757"><span class="card-star" onclick="toggleStar(this, 'slot-757', 'GAME 757')">★</span><div class="box"></div><span>GAME 757</span></div>
+<div class="slot" id="slot-758"><span class="card-star" onclick="toggleStar(this, 'slot-758', 'GAME 758')">★</span><div class="box"></div><span>GAME 758</span></div>
+<div class="slot" id="slot-759"><span class="card-star" onclick="toggleStar(this, 'slot-759', 'GAME 759')">★</span><div class="box"></div><span>GAME 759</span></div>
+<div class="slot" id="slot-760"><span class="card-star" onclick="toggleStar(this, 'slot-760', 'GAME 760')">★</span><div class="box"></div><span>GAME 760</span></div>
+<div class="slot" id="slot-761"><span class="card-star" onclick="toggleStar(this, 'slot-761', 'GAME 761')">★</span><div class="box"></div><span>GAME 761</span></div>
+<div class="slot" id="slot-762"><span class="card-star" onclick="toggleStar(this, 'slot-762', 'GAME 762')">★</span><div class="box"></div><span>GAME 762</span></div>
+<div class="slot" id="slot-763"><span class="card-star" onclick="toggleStar(this, 'slot-763', 'GAME 763')">★</span><div class="box"></div><span>GAME 763</span></div>
+<div class="slot" id="slot-764"><span class="card-star" onclick="toggleStar(this, 'slot-764', 'GAME 764')">★</span><div class="box"></div><span>GAME 764</span></div>
+<div class="slot" id="slot-765"><span class="card-star" onclick="toggleStar(this, 'slot-765', 'GAME 765')">★</span><div class="box"></div><span>GAME 765</span></div>
+<div class="slot" id="slot-766"><span class="card-star" onclick="toggleStar(this, 'slot-766', 'GAME 766')">★</span><div class="box"></div><span>GAME 766</span></div>
+<div class="slot" id="slot-767"><span class="card-star" onclick="toggleStar(this, 'slot-767', 'GAME 767')">★</span><div class="box"></div><span>GAME 767</span></div>
+<div class="slot" id="slot-768"><span class="card-star" onclick="toggleStar(this, 'slot-768', 'GAME 768')">★</span><div class="box"></div><span>GAME 768</span></div>
+<div class="slot" id="slot-769"><span class="card-star" onclick="toggleStar(this, 'slot-769', 'GAME 769')">★</span><div class="box"></div><span>GAME 769</span></div>
+<div class="slot" id="slot-770"><span class="card-star" onclick="toggleStar(this, 'slot-770', 'GAME 770')">★</span><div class="box"></div><span>GAME 770</span></div>
+<div class="slot" id="slot-771"><span class="card-star" onclick="toggleStar(this, 'slot-771', 'GAME 771')">★</span><div class="box"></div><span>GAME 771</span></div>
+<div class="slot" id="slot-772"><span class="card-star" onclick="toggleStar(this, 'slot-772', 'GAME 772')">★</span><div class="box"></div><span>GAME 772</span></div>
+<div class="slot" id="slot-773"><span class="card-star" onclick="toggleStar(this, 'slot-773', 'GAME 773')">★</span><div class="box"></div><span>GAME 773</span></div>
+<div class="slot" id="slot-774"><span class="card-star" onclick="toggleStar(this, 'slot-774', 'GAME 774')">★</span><div class="box"></div><span>GAME 774</span></div>
+<div class="slot" id="slot-775"><span class="card-star" onclick="toggleStar(this, 'slot-775', 'GAME 775')">★</span><div class="box"></div><span>GAME 775</span></div>
+<div class="slot" id="slot-776"><span class="card-star" onclick="toggleStar(this, 'slot-776', 'GAME 776')">★</span><div class="box"></div><span>GAME 776</span></div>
+<div class="slot" id="slot-777"><span class="card-star" onclick="toggleStar(this, 'slot-777', 'GAME 777')">★</span><div class="box"></div><span>GAME 777</span></div>
+<div class="slot" id="slot-778"><span class="card-star" onclick="toggleStar(this, 'slot-778', 'GAME 778')">★</span><div class="box"></div><span>GAME 778</span></div>
+<div class="slot" id="slot-779"><span class="card-star" onclick="toggleStar(this, 'slot-779', 'GAME 779')">★</span><div class="box"></div><span>GAME 779</span></div>
+<div class="slot" id="slot-780"><span class="card-star" onclick="toggleStar(this, 'slot-780', 'GAME 780')">★</span><div class="box"></div><span>GAME 780</span></div>
+<div class="slot" id="slot-781"><span class="card-star" onclick="toggleStar(this, 'slot-781', 'GAME 781')">★</span><div class="box"></div><span>GAME 781</span></div>
+<div class="slot" id="slot-782"><span class="card-star" onclick="toggleStar(this, 'slot-782', 'GAME 782')">★</span><div class="box"></div><span>GAME 782</span></div>
+<div class="slot" id="slot-783"><span class="card-star" onclick="toggleStar(this, 'slot-783', 'GAME 783')">★</span><div class="box"></div><span>GAME 783</span></div>
+<div class="slot" id="slot-784"><span class="card-star" onclick="toggleStar(this, 'slot-784', 'GAME 784')">★</span><div class="box"></div><span>GAME 784</span></div>
+<div class="slot" id="slot-785"><span class="card-star" onclick="toggleStar(this, 'slot-785', 'GAME 785')">★</span><div class="box"></div><span>GAME 785</span></div>
+<div class="slot" id="slot-786"><span class="card-star" onclick="toggleStar(this, 'slot-786', 'GAME 786')">★</span><div class="box"></div><span>GAME 786</span></div>
+<div class="slot" id="slot-787"><span class="card-star" onclick="toggleStar(this, 'slot-787', 'GAME 787')">★</span><div class="box"></div><span>GAME 787</span></div>
+<div class="slot" id="slot-788"><span class="card-star" onclick="toggleStar(this, 'slot-788', 'GAME 788')">★</span><div class="box"></div><span>GAME 788</span></div>
+<div class="slot" id="slot-789"><span class="card-star" onclick="toggleStar(this, 'slot-789', 'GAME 789')">★</span><div class="box"></div><span>GAME 789</span></div>
+<div class="slot" id="slot-790"><span class="card-star" onclick="toggleStar(this, 'slot-790', 'GAME 790')">★</span><div class="box"></div><span>GAME 790</span></div>
+<div class="slot" id="slot-791"><span class="card-star" onclick="toggleStar(this, 'slot-791', 'GAME 791')">★</span><div class="box"></div><span>GAME 791</span></div>
+<div class="slot" id="slot-792"><span class="card-star" onclick="toggleStar(this, 'slot-792', 'GAME 792')">★</span><div class="box"></div><span>GAME 792</span></div>
+<div class="slot" id="slot-793"><span class="card-star" onclick="toggleStar(this, 'slot-793', 'GAME 793')">★</span><div class="box"></div><span>GAME 793</span></div>
+<div class="slot" id="slot-794"><span class="card-star" onclick="toggleStar(this, 'slot-794', 'GAME 794')">★</span><div class="box"></div><span>GAME 794</span></div>
+<div class="slot" id="slot-795"><span class="card-star" onclick="toggleStar(this, 'slot-795', 'GAME 795')">★</span><div class="box"></div><span>GAME 795</span></div>
+<div class="slot" id="slot-796"><span class="card-star" onclick="toggleStar(this, 'slot-796', 'GAME 796')">★</span><div class="box"></div><span>GAME 796</span></div>
+<div class="slot" id="slot-797"><span class="card-star" onclick="toggleStar(this, 'slot-797', 'GAME 797')">★</span><div class="box"></div><span>GAME 797</span></div>
+<div class="slot" id="slot-798"><span class="card-star" onclick="toggleStar(this, 'slot-798', 'GAME 798')">★</span><div class="box"></div><span>GAME 798</span></div>
+<div class="slot" id="slot-799"><span class="card-star" onclick="toggleStar(this, 'slot-799', 'GAME 799')">★</span><div class="box"></div><span>GAME 799</span></div>
+<div class="slot" id="slot-800"><span class="card-star" onclick="toggleStar(this, 'slot-800', 'GAME 800')">★</span><div class="box"></div><span>GAME 800</span></div>
+<div class="slot" id="slot-801"><span class="card-star" onclick="toggleStar(this, 'slot-801', 'GAME 801')">★</span><div class="box"></div><span>GAME 801</span></div>
+<div class="slot" id="slot-802"><span class="card-star" onclick="toggleStar(this, 'slot-802', 'GAME 802')">★</span><div class="box"></div><span>GAME 802</span></div>
+<div class="slot" id="slot-803"><span class="card-star" onclick="toggleStar(this, 'slot-803', 'GAME 803')">★</span><div class="box"></div><span>GAME 803</span></div>
+<div class="slot" id="slot-804"><span class="card-star" onclick="toggleStar(this, 'slot-804', 'GAME 804')">★</span><div class="box"></div><span>GAME 804</span></div>
+<div class="slot" id="slot-805"><span class="card-star" onclick="toggleStar(this, 'slot-805', 'GAME 805')">★</span><div class="box"></div><span>GAME 805</span></div>
+<div class="slot" id="slot-806"><span class="card-star" onclick="toggleStar(this, 'slot-806', 'GAME 806')">★</span><div class="box"></div><span>GAME 806</span></div>
+<div class="slot" id="slot-807"><span class="card-star" onclick="toggleStar(this, 'slot-807', 'GAME 807')">★</span><div class="box"></div><span>GAME 807</span></div>
+<div class="slot" id="slot-808"><span class="card-star" onclick="toggleStar(this, 'slot-808', 'GAME 808')">★</span><div class="box"></div><span>GAME 808</span></div>
+<div class="slot" id="slot-809"><span class="card-star" onclick="toggleStar(this, 'slot-809', 'GAME 809')">★</span><div class="box"></div><span>GAME 809</span></div>
+<div class="slot" id="slot-810"><span class="card-star" onclick="toggleStar(this, 'slot-810', 'GAME 810')">★</span><div class="box"></div><span>GAME 810</span></div>
+<div class="slot" id="slot-811"><span class="card-star" onclick="toggleStar(this, 'slot-811', 'GAME 811')">★</span><div class="box"></div><span>GAME 811</span></div>
+<div class="slot" id="slot-812"><span class="card-star" onclick="toggleStar(this, 'slot-812', 'GAME 812')">★</span><div class="box"></div><span>GAME 812</span></div>
+<div class="slot" id="slot-813"><span class="card-star" onclick="toggleStar(this, 'slot-813', 'GAME 813')">★</span><div class="box"></div><span>GAME 813</span></div>
+<div class="slot" id="slot-814"><span class="card-star" onclick="toggleStar(this, 'slot-814', 'GAME 814')">★</span><div class="box"></div><span>GAME 814</span></div>
+<div class="slot" id="slot-815"><span class="card-star" onclick="toggleStar(this, 'slot-815', 'GAME 815')">★</span><div class="box"></div><span>GAME 815</span></div>
+<div class="slot" id="slot-816"><span class="card-star" onclick="toggleStar(this, 'slot-816', 'GAME 816')">★</span><div class="box"></div><span>GAME 816</span></div>
+<div class="slot" id="slot-817"><span class="card-star" onclick="toggleStar(this, 'slot-817', 'GAME 817')">★</span><div class="box"></div><span>GAME 817</span></div>
+<div class="slot" id="slot-818"><span class="card-star" onclick="toggleStar(this, 'slot-818', 'GAME 818')">★</span><div class="box"></div><span>GAME 818</span></div>
+<div class="slot" id="slot-819"><span class="card-star" onclick="toggleStar(this, 'slot-819', 'GAME 819')">★</span><div class="box"></div><span>GAME 819</span></div>
+<div class="slot" id="slot-820"><span class="card-star" onclick="toggleStar(this, 'slot-820', 'GAME 820')">★</span><div class="box"></div><span>GAME 820</span></div>
+<div class="slot" id="slot-821"><span class="card-star" onclick="toggleStar(this, 'slot-821', 'GAME 821')">★</span><div class="box"></div><span>GAME 821</span></div>
+<div class="slot" id="slot-822"><span class="card-star" onclick="toggleStar(this, 'slot-822', 'GAME 822')">★</span><div class="box"></div><span>GAME 822</span></div>
+<div class="slot" id="slot-823"><span class="card-star" onclick="toggleStar(this, 'slot-823', 'GAME 823')">★</span><div class="box"></div><span>GAME 823</span></div>
+<div class="slot" id="slot-824"><span class="card-star" onclick="toggleStar(this, 'slot-824', 'GAME 824')">★</span><div class="box"></div><span>GAME 824</span></div>
+<div class="slot" id="slot-825"><span class="card-star" onclick="toggleStar(this, 'slot-825', 'GAME 825')">★</span><div class="box"></div><span>GAME 825</span></div>
+<div class="slot" id="slot-826"><span class="card-star" onclick="toggleStar(this, 'slot-826', 'GAME 826')">★</span><div class="box"></div><span>GAME 826</span></div>
+<div class="slot" id="slot-827"><span class="card-star" onclick="toggleStar(this, 'slot-827', 'GAME 827')">★</span><div class="box"></div><span>GAME 827</span></div>
+<div class="slot" id="slot-828"><span class="card-star" onclick="toggleStar(this, 'slot-828', 'GAME 828')">★</span><div class="box"></div><span>GAME 828</span></div>
+<div class="slot" id="slot-829"><span class="card-star" onclick="toggleStar(this, 'slot-829', 'GAME 829')">★</span><div class="box"></div><span>GAME 829</span></div>
+<div class="slot" id="slot-830"><span class="card-star" onclick="toggleStar(this, 'slot-830', 'GAME 830')">★</span><div class="box"></div><span>GAME 830</span></div>
+<div class="slot" id="slot-831"><span class="card-star" onclick="toggleStar(this, 'slot-831', 'GAME 831')">★</span><div class="box"></div><span>GAME 831</span></div>
+<div class="slot" id="slot-832"><span class="card-star" onclick="toggleStar(this, 'slot-832', 'GAME 832')">★</span><div class="box"></div><span>GAME 832</span></div>
+<div class="slot" id="slot-833"><span class="card-star" onclick="toggleStar(this, 'slot-833', 'GAME 833')">★</span><div class="box"></div><span>GAME 833</span></div>
+<div class="slot" id="slot-834"><span class="card-star" onclick="toggleStar(this, 'slot-834', 'GAME 834')">★</span><div class="box"></div><span>GAME 834</span></div>
+<div class="slot" id="slot-835"><span class="card-star" onclick="toggleStar(this, 'slot-835', 'GAME 835')">★</span><div class="box"></div><span>GAME 835</span></div>
+<div class="slot" id="slot-836"><span class="card-star" onclick="toggleStar(this, 'slot-836', 'GAME 836')">★</span><div class="box"></div><span>GAME 836</span></div>
+<div class="slot" id="slot-837"><span class="card-star" onclick="toggleStar(this, 'slot-837', 'GAME 837')">★</span><div class="box"></div><span>GAME 837</span></div>
+<div class="slot" id="slot-838"><span class="card-star" onclick="toggleStar(this, 'slot-838', 'GAME 838')">★</span><div class="box"></div><span>GAME 838</span></div>
+<div class="slot" id="slot-839"><span class="card-star" onclick="toggleStar(this, 'slot-839', 'GAME 839')">★</span><div class="box"></div><span>GAME 839</span></div>
+<div class="slot" id="slot-840"><span class="card-star" onclick="toggleStar(this, 'slot-840', 'GAME 840')">★</span><div class="box"></div><span>GAME 840</span></div>
+<div class="slot" id="slot-841"><span class="card-star" onclick="toggleStar(this, 'slot-841', 'GAME 841')">★</span><div class="box"></div><span>GAME 841</span></div>
+<div class="slot" id="slot-842"><span class="card-star" onclick="toggleStar(this, 'slot-842', 'GAME 842')">★</span><div class="box"></div><span>GAME 842</span></div>
+<div class="slot" id="slot-843"><span class="card-star" onclick="toggleStar(this, 'slot-843', 'GAME 843')">★</span><div class="box"></div><span>GAME 843</span></div>
+<div class="slot" id="slot-844"><span class="card-star" onclick="toggleStar(this, 'slot-844', 'GAME 844')">★</span><div class="box"></div><span>GAME 844</span></div>
+<div class="slot" id="slot-845"><span class="card-star" onclick="toggleStar(this, 'slot-845', 'GAME 845')">★</span><div class="box"></div><span>GAME 845</span></div>
+<div class="slot" id="slot-846"><span class="card-star" onclick="toggleStar(this, 'slot-846', 'GAME 846')">★</span><div class="box"></div><span>GAME 846</span></div>
+<div class="slot" id="slot-847"><span class="card-star" onclick="toggleStar(this, 'slot-847', 'GAME 847')">★</span><div class="box"></div><span>GAME 847</span></div>
+<div class="slot" id="slot-848"><span class="card-star" onclick="toggleStar(this, 'slot-848', 'GAME 848')">★</span><div class="box"></div><span>GAME 848</span></div>
+<div class="slot" id="slot-849"><span class="card-star" onclick="toggleStar(this, 'slot-849', 'GAME 849')">★</span><div class="box"></div><span>GAME 849</span></div>
+<div class="slot" id="slot-850"><span class="card-star" onclick="toggleStar(this, 'slot-850', 'GAME 850')">★</span><div class="box"></div><span>GAME 850</span></div>
+<div class="slot" id="slot-851"><span class="card-star" onclick="toggleStar(this, 'slot-851', 'GAME 851')">★</span><div class="box"></div><span>GAME 851</span></div>
+<div class="slot" id="slot-852"><span class="card-star" onclick="toggleStar(this, 'slot-852', 'GAME 852')">★</span><div class="box"></div><span>GAME 852</span></div>
+<div class="slot" id="slot-853"><span class="card-star" onclick="toggleStar(this, 'slot-853', 'GAME 853')">★</span><div class="box"></div><span>GAME 853</span></div>
+<div class="slot" id="slot-854"><span class="card-star" onclick="toggleStar(this, 'slot-854', 'GAME 854')">★</span><div class="box"></div><span>GAME 854</span></div>
+<div class="slot" id="slot-855"><span class="card-star" onclick="toggleStar(this, 'slot-855', 'GAME 855')">★</span><div class="box"></div><span>GAME 855</span></div>
+<div class="slot" id="slot-856"><span class="card-star" onclick="toggleStar(this, 'slot-856', 'GAME 856')">★</span><div class="box"></div><span>GAME 856</span></div>
+<div class="slot" id="slot-857"><span class="card-star" onclick="toggleStar(this, 'slot-857', 'GAME 857')">★</span><div class="box"></div><span>GAME 857</span></div>
+<div class="slot" id="slot-858"><span class="card-star" onclick="toggleStar(this, 'slot-858', 'GAME 858')">★</span><div class="box"></div><span>GAME 858</span></div>
+<div class="slot" id="slot-859"><span class="card-star" onclick="toggleStar(this, 'slot-859', 'GAME 859')">★</span><div class="box"></div><span>GAME 859</span></div>
+<div class="slot" id="slot-860"><span class="card-star" onclick="toggleStar(this, 'slot-860', 'GAME 860')">★</span><div class="box"></div><span>GAME 860</span></div>
+<div class="slot" id="slot-861"><span class="card-star" onclick="toggleStar(this, 'slot-861', 'GAME 861')">★</span><div class="box"></div><span>GAME 861</span></div>
+<div class="slot" id="slot-862"><span class="card-star" onclick="toggleStar(this, 'slot-862', 'GAME 862')">★</span><div class="box"></div><span>GAME 862</span></div>
+<div class="slot" id="slot-863"><span class="card-star" onclick="toggleStar(this, 'slot-863', 'GAME 863')">★</span><div class="box"></div><span>GAME 863</span></div>
+<div class="slot" id="slot-864"><span class="card-star" onclick="toggleStar(this, 'slot-864', 'GAME 864')">★</span><div class="box"></div><span>GAME 864</span></div>
+<div class="slot" id="slot-865"><span class="card-star" onclick="toggleStar(this, 'slot-865', 'GAME 865')">★</span><div class="box"></div><span>GAME 865</span></div>
+<div class="slot" id="slot-866"><span class="card-star" onclick="toggleStar(this, 'slot-866', 'GAME 866')">★</span><div class="box"></div><span>GAME 866</span></div>
+<div class="slot" id="slot-867"><span class="card-star" onclick="toggleStar(this, 'slot-867', 'GAME 867')">★</span><div class="box"></div><span>GAME 867</span></div>
+<div class="slot" id="slot-868"><span class="card-star" onclick="toggleStar(this, 'slot-868', 'GAME 868')">★</span><div class="box"></div><span>GAME 868</span></div>
+<div class="slot" id="slot-869"><span class="card-star" onclick="toggleStar(this, 'slot-869', 'GAME 869')">★</span><div class="box"></div><span>GAME 869</span></div>
+<div class="slot" id="slot-870"><span class="card-star" onclick="toggleStar(this, 'slot-870', 'GAME 870')">★</span><div class="box"></div><span>GAME 870</span></div>
+<div class="slot" id="slot-871"><span class="card-star" onclick="toggleStar(this, 'slot-871', 'GAME 871')">★</span><div class="box"></div><span>GAME 871</span></div>
+<div class="slot" id="slot-872"><span class="card-star" onclick="toggleStar(this, 'slot-872', 'GAME 872')">★</span><div class="box"></div><span>GAME 872</span></div>
+<div class="slot" id="slot-873"><span class="card-star" onclick="toggleStar(this, 'slot-873', 'GAME 873')">★</span><div class="box"></div><span>GAME 873</span></div>
+<div class="slot" id="slot-874"><span class="card-star" onclick="toggleStar(this, 'slot-874', 'GAME 874')">★</span><div class="box"></div><span>GAME 874</span></div>
+<div class="slot" id="slot-875"><span class="card-star" onclick="toggleStar(this, 'slot-875', 'GAME 875')">★</span><div class="box"></div><span>GAME 875</span></div>
+<div class="slot" id="slot-876"><span class="card-star" onclick="toggleStar(this, 'slot-876', 'GAME 876')">★</span><div class="box"></div><span>GAME 876</span></div>
+<div class="slot" id="slot-877"><span class="card-star" onclick="toggleStar(this, 'slot-877', 'GAME 877')">★</span><div class="box"></div><span>GAME 877</span></div>
+<div class="slot" id="slot-878"><span class="card-star" onclick="toggleStar(this, 'slot-878', 'GAME 878')">★</span><div class="box"></div><span>GAME 878</span></div>
+<div class="slot" id="slot-879"><span class="card-star" onclick="toggleStar(this, 'slot-879', 'GAME 879')">★</span><div class="box"></div><span>GAME 879</span></div>
+<div class="slot" id="slot-880"><span class="card-star" onclick="toggleStar(this, 'slot-880', 'GAME 880')">★</span><div class="box"></div><span>GAME 880</span></div>
+<div class="slot" id="slot-881"><span class="card-star" onclick="toggleStar(this, 'slot-881', 'GAME 881')">★</span><div class="box"></div><span>GAME 881</span></div>
+<div class="slot" id="slot-882"><span class="card-star" onclick="toggleStar(this, 'slot-882', 'GAME 882')">★</span><div class="box"></div><span>GAME 882</span></div>
+<div class="slot" id="slot-883"><span class="card-star" onclick="toggleStar(this, 'slot-883', 'GAME 883')">★</span><div class="box"></div><span>GAME 883</span></div>
+<div class="slot" id="slot-884"><span class="card-star" onclick="toggleStar(this, 'slot-884', 'GAME 884')">★</span><div class="box"></div><span>GAME 884</span></div>
+<div class="slot" id="slot-885"><span class="card-star" onclick="toggleStar(this, 'slot-885', 'GAME 885')">★</span><div class="box"></div><span>GAME 885</span></div>
+<div class="slot" id="slot-886"><span class="card-star" onclick="toggleStar(this, 'slot-886', 'GAME 886')">★</span><div class="box"></div><span>GAME 886</span></div>
+<div class="slot" id="slot-887"><span class="card-star" onclick="toggleStar(this, 'slot-887', 'GAME 887')">★</span><div class="box"></div><span>GAME 887</span></div>
+<div class="slot" id="slot-888"><span class="card-star" onclick="toggleStar(this, 'slot-888', 'GAME 888')">★</span><div class="box"></div><span>GAME 888</span></div>
+<div class="slot" id="slot-889"><span class="card-star" onclick="toggleStar(this, 'slot-889', 'GAME 889')">★</span><div class="box"></div><span>GAME 889</span></div>
+<div class="slot" id="slot-890"><span class="card-star" onclick="toggleStar(this, 'slot-890', 'GAME 890')">★</span><div class="box"></div><span>GAME 890</span></div>
+<div class="slot" id="slot-891"><span class="card-star" onclick="toggleStar(this, 'slot-891', 'GAME 891')">★</span><div class="box"></div><span>GAME 891</span></div>
+<div class="slot" id="slot-892"><span class="card-star" onclick="toggleStar(this, 'slot-892', 'GAME 892')">★</span><div class="box"></div><span>GAME 892</span></div>
+<div class="slot" id="slot-893"><span class="card-star" onclick="toggleStar(this, 'slot-893', 'GAME 893')">★</span><div class="box"></div><span>GAME 893</span></div>
+<div class="slot" id="slot-894"><span class="card-star" onclick="toggleStar(this, 'slot-894', 'GAME 894')">★</span><div class="box"></div><span>GAME 894</span></div>
+<div class="slot" id="slot-895"><span class="card-star" onclick="toggleStar(this, 'slot-895', 'GAME 895')">★</span><div class="box"></div><span>GAME 895</span></div>
+<div class="slot" id="slot-896"><span class="card-star" onclick="toggleStar(this, 'slot-896', 'GAME 896')">★</span><div class="box"></div><span>GAME 896</span></div>
+<div class="slot" id="slot-897"><span class="card-star" onclick="toggleStar(this, 'slot-897', 'GAME 897')">★</span><div class="box"></div><span>GAME 897</span></div>
+<div class="slot" id="slot-898"><span class="card-star" onclick="toggleStar(this, 'slot-898', 'GAME 898')">★</span><div class="box"></div><span>GAME 898</span></div>
+<div class="slot" id="slot-899"><span class="card-star" onclick="toggleStar(this, 'slot-899', 'GAME 899')">★</span><div class="box"></div><span>GAME 899</span></div>
+<div class="slot" id="slot-900"><span class="card-star" onclick="toggleStar(this, 'slot-900', 'GAME 900')">★</span><div class="box"></div><span>GAME 900</span></div>
+<div class="slot" id="slot-901"><span class="card-star" onclick="toggleStar(this, 'slot-901', 'GAME 901')">★</span><div class="box"></div><span>GAME 901</span></div>
+<div class="slot" id="slot-902"><span class="card-star" onclick="toggleStar(this, 'slot-902', 'GAME 902')">★</span><div class="box"></div><span>GAME 902</span></div>
+<div class="slot" id="slot-903"><span class="card-star" onclick="toggleStar(this, 'slot-903', 'GAME 903')">★</span><div class="box"></div><span>GAME 903</span></div>
+<div class="slot" id="slot-904"><span class="card-star" onclick="toggleStar(this, 'slot-904', 'GAME 904')">★</span><div class="box"></div><span>GAME 904</span></div>
+<div class="slot" id="slot-905"><span class="card-star" onclick="toggleStar(this, 'slot-905', 'GAME 905')">★</span><div class="box"></div><span>GAME 905</span></div>
+<div class="slot" id="slot-906"><span class="card-star" onclick="toggleStar(this, 'slot-906', 'GAME 906')">★</span><div class="box"></div><span>GAME 906</span></div>
+<div class="slot" id="slot-907"><span class="card-star" onclick="toggleStar(this, 'slot-907', 'GAME 907')">★</span><div class="box"></div><span>GAME 907</span></div>
+<div class="slot" id="slot-908"><span class="card-star" onclick="toggleStar(this, 'slot-908', 'GAME 908')">★</span><div class="box"></div><span>GAME 908</span></div>
+<div class="slot" id="slot-909"><span class="card-star" onclick="toggleStar(this, 'slot-909', 'GAME 909')">★</span><div class="box"></div><span>GAME 909</span></div>
+<div class="slot" id="slot-910"><span class="card-star" onclick="toggleStar(this, 'slot-910', 'GAME 910')">★</span><div class="box"></div><span>GAME 910</span></div>
+<div class="slot" id="slot-911"><span class="card-star" onclick="toggleStar(this, 'slot-911', 'GAME 911')">★</span><div class="box"></div><span>GAME 911</span></div>
+<div class="slot" id="slot-912"><span class="card-star" onclick="toggleStar(this, 'slot-912', 'GAME 912')">★</span><div class="box"></div><span>GAME 912</span></div>
+<div class="slot" id="slot-913"><span class="card-star" onclick="toggleStar(this, 'slot-913', 'GAME 913')">★</span><div class="box"></div><span>GAME 913</span></div>
+<div class="slot" id="slot-914"><span class="card-star" onclick="toggleStar(this, 'slot-914', 'GAME 914')">★</span><div class="box"></div><span>GAME 914</span></div>
+<div class="slot" id="slot-915"><span class="card-star" onclick="toggleStar(this, 'slot-915', 'GAME 915')">★</span><div class="box"></div><span>GAME 915</span></div>
+<div class="slot" id="slot-916"><span class="card-star" onclick="toggleStar(this, 'slot-916', 'GAME 916')">★</span><div class="box"></div><span>GAME 916</span></div>
+<div class="slot" id="slot-917"><span class="card-star" onclick="toggleStar(this, 'slot-917', 'GAME 917')">★</span><div class="box"></div><span>GAME 917</span></div>
+<div class="slot" id="slot-918"><span class="card-star" onclick="toggleStar(this, 'slot-918', 'GAME 918')">★</span><div class="box"></div><span>GAME 918</span></div>
+<div class="slot" id="slot-919"><span class="card-star" onclick="toggleStar(this, 'slot-919', 'GAME 919')">★</span><div class="box"></div><span>GAME 919</span></div>
+<div class="slot" id="slot-920"><span class="card-star" onclick="toggleStar(this, 'slot-920', 'GAME 920')">★</span><div class="box"></div><span>GAME 920</span></div>
+<div class="slot" id="slot-921"><span class="card-star" onclick="toggleStar(this, 'slot-921', 'GAME 921')">★</span><div class="box"></div><span>GAME 921</span></div>
+<div class="slot" id="slot-922"><span class="card-star" onclick="toggleStar(this, 'slot-922', 'GAME 922')">★</span><div class="box"></div><span>GAME 922</span></div>
+<div class="slot" id="slot-923"><span class="card-star" onclick="toggleStar(this, 'slot-923', 'GAME 923')">★</span><div class="box"></div><span>GAME 923</span></div>
+<div class="slot" id="slot-924"><span class="card-star" onclick="toggleStar(this, 'slot-924', 'GAME 924')">★</span><div class="box"></div><span>GAME 924</span></div>
+<div class="slot" id="slot-925"><span class="card-star" onclick="toggleStar(this, 'slot-925', 'GAME 925')">★</span><div class="box"></div><span>GAME 925</span></div>
+<div class="slot" id="slot-926"><span class="card-star" onclick="toggleStar(this, 'slot-926', 'GAME 926')">★</span><div class="box"></div><span>GAME 926</span></div>
+<div class="slot" id="slot-927"><span class="card-star" onclick="toggleStar(this, 'slot-927', 'GAME 927')">★</span><div class="box"></div><span>GAME 927</span></div>
+<div class="slot" id="slot-928"><span class="card-star" onclick="toggleStar(this, 'slot-928', 'GAME 928')">★</span><div class="box"></div><span>GAME 928</span></div>
+<div class="slot" id="slot-929"><span class="card-star" onclick="toggleStar(this, 'slot-929', 'GAME 929')">★</span><div class="box"></div><span>GAME 929</span></div>
+<div class="slot" id="slot-930"><span class="card-star" onclick="toggleStar(this, 'slot-930', 'GAME 930')">★</span><div class="box"></div><span>GAME 930</span></div>
+<div class="slot" id="slot-931"><span class="card-star" onclick="toggleStar(this, 'slot-931', 'GAME 931')">★</span><div class="box"></div><span>GAME 931</span></div>
+<div class="slot" id="slot-932"><span class="card-star" onclick="toggleStar(this, 'slot-932', 'GAME 932')">★</span><div class="box"></div><span>GAME 932</span></div>
+<div class="slot" id="slot-933"><span class="card-star" onclick="toggleStar(this, 'slot-933', 'GAME 933')">★</span><div class="box"></div><span>GAME 933</span></div>
+<div class="slot" id="slot-934"><span class="card-star" onclick="toggleStar(this, 'slot-934', 'GAME 934')">★</span><div class="box"></div><span>GAME 934</span></div>
+<div class="slot" id="slot-935"><span class="card-star" onclick="toggleStar(this, 'slot-935', 'GAME 935')">★</span><div class="box"></div><span>GAME 935</span></div>
+<div class="slot" id="slot-936"><span class="card-star" onclick="toggleStar(this, 'slot-936', 'GAME 936')">★</span><div class="box"></div><span>GAME 936</span></div>
+<div class="slot" id="slot-937"><span class="card-star" onclick="toggleStar(this, 'slot-937', 'GAME 937')">★</span><div class="box"></div><span>GAME 937</span></div>
+<div class="slot" id="slot-938"><span class="card-star" onclick="toggleStar(this, 'slot-938', 'GAME 938')">★</span><div class="box"></div><span>GAME 938</span></div>
+<div class="slot" id="slot-939"><span class="card-star" onclick="toggleStar(this, 'slot-939', 'GAME 939')">★</span><div class="box"></div><span>GAME 939</span></div>
+<div class="slot" id="slot-940"><span class="card-star" onclick="toggleStar(this, 'slot-940', 'GAME 940')">★</span><div class="box"></div><span>GAME 940</span></div>
+<div class="slot" id="slot-941"><span class="card-star" onclick="toggleStar(this, 'slot-941', 'GAME 941')">★</span><div class="box"></div><span>GAME 941</span></div>
+<div class="slot" id="slot-942"><span class="card-star" onclick="toggleStar(this, 'slot-942', 'GAME 942')">★</span><div class="box"></div><span>GAME 942</span></div>
+<div class="slot" id="slot-943"><span class="card-star" onclick="toggleStar(this, 'slot-943', 'GAME 943')">★</span><div class="box"></div><span>GAME 943</span></div>
+<div class="slot" id="slot-944"><span class="card-star" onclick="toggleStar(this, 'slot-944', 'GAME 944')">★</span><div class="box"></div><span>GAME 944</span></div>
+<div class="slot" id="slot-945"><span class="card-star" onclick="toggleStar(this, 'slot-945', 'GAME 945')">★</span><div class="box"></div><span>GAME 945</span></div>
+<div class="slot" id="slot-946"><span class="card-star" onclick="toggleStar(this, 'slot-946', 'GAME 946')">★</span><div class="box"></div><span>GAME 946</span></div>
+<div class="slot" id="slot-947"><span class="card-star" onclick="toggleStar(this, 'slot-947', 'GAME 947')">★</span><div class="box"></div><span>GAME 947</span></div>
+<div class="slot" id="slot-948"><span class="card-star" onclick="toggleStar(this, 'slot-948', 'GAME 948')">★</span><div class="box"></div><span>GAME 948</span></div>
+<div class="slot" id="slot-949"><span class="card-star" onclick="toggleStar(this, 'slot-949', 'GAME 949')">★</span><div class="box"></div><span>GAME 949</span></div>
+<div class="slot" id="slot-950"><span class="card-star" onclick="toggleStar(this, 'slot-950', 'GAME 950')">★</span><div class="box"></div><span>GAME 950</span></div>
+<div class="slot" id="slot-951"><span class="card-star" onclick="toggleStar(this, 'slot-951', 'GAME 951')">★</span><div class="box"></div><span>GAME 951</span></div>
+<div class="slot" id="slot-952"><span class="card-star" onclick="toggleStar(this, 'slot-952', 'GAME 952')">★</span><div class="box"></div><span>GAME 952</span></div>
+<div class="slot" id="slot-953"><span class="card-star" onclick="toggleStar(this, 'slot-953', 'GAME 953')">★</span><div class="box"></div><span>GAME 953</span></div>
+<div class="slot" id="slot-954"><span class="card-star" onclick="toggleStar(this, 'slot-954', 'GAME 954')">★</span><div class="box"></div><span>GAME 954</span></div>
+<div class="slot" id="slot-955"><span class="card-star" onclick="toggleStar(this, 'slot-955', 'GAME 955')">★</span><div class="box"></div><span>GAME 955</span></div>
+<div class="slot" id="slot-956"><span class="card-star" onclick="toggleStar(this, 'slot-956', 'GAME 956')">★</span><div class="box"></div><span>GAME 956</span></div>
+<div class="slot" id="slot-957"><span class="card-star" onclick="toggleStar(this, 'slot-957', 'GAME 957')">★</span><div class="box"></div><span>GAME 957</span></div>
+<div class="slot" id="slot-958"><span class="card-star" onclick="toggleStar(this, 'slot-958', 'GAME 958')">★</span><div class="box"></div><span>GAME 958</span></div>
+<div class="slot" id="slot-959"><span class="card-star" onclick="toggleStar(this, 'slot-959', 'GAME 959')">★</span><div class="box"></div><span>GAME 959</span></div>
+<div class="slot" id="slot-960"><span class="card-star" onclick="toggleStar(this, 'slot-960', 'GAME 960')">★</span><div class="box"></div><span>GAME 960</span></div>
+<div class="slot" id="slot-961"><span class="card-star" onclick="toggleStar(this, 'slot-961', 'GAME 961')">★</span><div class="box"></div><span>GAME 961</span></div>
+<div class="slot" id="slot-962"><span class="card-star" onclick="toggleStar(this, 'slot-962', 'GAME 962')">★</span><div class="box"></div><span>GAME 962</span></div>
+<div class="slot" id="slot-963"><span class="card-star" onclick="toggleStar(this, 'slot-963', 'GAME 963')">★</span><div class="box"></div><span>GAME 963</span></div>
+<div class="slot" id="slot-964"><span class="card-star" onclick="toggleStar(this, 'slot-964', 'GAME 964')">★</span><div class="box"></div><span>GAME 964</span></div>
+<div class="slot" id="slot-965"><span class="card-star" onclick="toggleStar(this, 'slot-965', 'GAME 965')">★</span><div class="box"></div><span>GAME 965</span></div>
+<div class="slot" id="slot-966"><span class="card-star" onclick="toggleStar(this, 'slot-966', 'GAME 966')">★</span><div class="box"></div><span>GAME 966</span></div>
+<div class="slot" id="slot-967"><span class="card-star" onclick="toggleStar(this, 'slot-967', 'GAME 967')">★</span><div class="box"></div><span>GAME 967</span></div>
+<div class="slot" id="slot-968"><span class="card-star" onclick="toggleStar(this, 'slot-968', 'GAME 968')">★</span><div class="box"></div><span>GAME 968</span></div>
+<div class="slot" id="slot-969"><span class="card-star" onclick="toggleStar(this, 'slot-969', 'GAME 969')">★</span><div class="box"></div><span>GAME 969</span></div>
+<div class="slot" id="slot-970"><span class="card-star" onclick="toggleStar(this, 'slot-970', 'GAME 970')">★</span><div class="box"></div><span>GAME 970</span></div>
+<div class="slot" id="slot-971"><span class="card-star" onclick="toggleStar(this, 'slot-971', 'GAME 971')">★</span><div class="box"></div><span>GAME 971</span></div>
+<div class="slot" id="slot-972"><span class="card-star" onclick="toggleStar(this, 'slot-972', 'GAME 972')">★</span><div class="box"></div><span>GAME 972</span></div>
+<div class="slot" id="slot-973"><span class="card-star" onclick="toggleStar(this, 'slot-973', 'GAME 973')">★</span><div class="box"></div><span>GAME 973</span></div>
+<div class="slot" id="slot-974"><span class="card-star" onclick="toggleStar(this, 'slot-974', 'GAME 974')">★</span><div class="box"></div><span>GAME 974</span></div>
+<div class="slot" id="slot-975"><span class="card-star" onclick="toggleStar(this, 'slot-975', 'GAME 975')">★</span><div class="box"></div><span>GAME 975</span></div>
+<div class="slot" id="slot-976"><span class="card-star" onclick="toggleStar(this, 'slot-976', 'GAME 976')">★</span><div class="box"></div><span>GAME 976</span></div>
+<div class="slot" id="slot-977"><span class="card-star" onclick="toggleStar(this, 'slot-977', 'GAME 977')">★</span><div class="box"></div><span>GAME 977</span></div>
+<div class="slot" id="slot-978"><span class="card-star" onclick="toggleStar(this, 'slot-978', 'GAME 978')">★</span><div class="box"></div><span>GAME 978</span></div>
+<div class="slot" id="slot-979"><span class="card-star" onclick="toggleStar(this, 'slot-979', 'GAME 979')">★</span><div class="box"></div><span>GAME 979</span></div>
+<div class="slot" id="slot-980"><span class="card-star" onclick="toggleStar(this, 'slot-980', 'GAME 980')">★</span><div class="box"></div><span>GAME 980</span></div>
+<div class="slot" id="slot-981"><span class="card-star" onclick="toggleStar(this, 'slot-981', 'GAME 981')">★</span><div class="box"></div><span>GAME 981</span></div>
+<div class="slot" id="slot-982"><span class="card-star" onclick="toggleStar(this, 'slot-982', 'GAME 982')">★</span><div class="box"></div><span>GAME 982</span></div>
+<div class="slot" id="slot-983"><span class="card-star" onclick="toggleStar(this, 'slot-983', 'GAME 983')">★</span><div class="box"></div><span>GAME 983</span></div>
+<div class="slot" id="slot-984"><span class="card-star" onclick="toggleStar(this, 'slot-984', 'GAME 984')">★</span><div class="box"></div><span>GAME 984</span></div>
+<div class="slot" id="slot-985"><span class="card-star" onclick="toggleStar(this, 'slot-985', 'GAME 985')">★</span><div class="box"></div><span>GAME 985</span></div>
+<div class="slot" id="slot-986"><span class="card-star" onclick="toggleStar(this, 'slot-986', 'GAME 986')">★</span><div class="box"></div><span>GAME 986</span></div>
+<div class="slot" id="slot-987"><span class="card-star" onclick="toggleStar(this, 'slot-987', 'GAME 987')">★</span><div class="box"></div><span>GAME 987</span></div>
+<div class="slot" id="slot-988"><span class="card-star" onclick="toggleStar(this, 'slot-988', 'GAME 988')">★</span><div class="box"></div><span>GAME 988</span></div>
+<div class="slot" id="slot-989"><span class="card-star" onclick="toggleStar(this, 'slot-989', 'GAME 989')">★</span><div class="box"></div><span>GAME 989</span></div>
+<div class="slot" id="slot-990"><span class="card-star" onclick="toggleStar(this, 'slot-990', 'GAME 990')">★</span><div class="box"></div><span>GAME 990</span></div>
+<div class="slot" id="slot-991"><span class="card-star" onclick="toggleStar(this, 'slot-991', 'GAME 991')">★</span><div class="box"></div><span>GAME 991</span></div>
+<div class="slot" id="slot-992"><span class="card-star" onclick="toggleStar(this, 'slot-992', 'GAME 992')">★</span><div class="box"></div><span>GAME 992</span></div>
+<div class="slot" id="slot-993"><span class="card-star" onclick="toggleStar(this, 'slot-993', 'GAME 993')">★</span><div class="box"></div><span>GAME 993</span></div>
+<div class="slot" id="slot-994"><span class="card-star" onclick="toggleStar(this, 'slot-994', 'GAME 994')">★</span><div class="box"></div><span>GAME 994</span></div>
+<div class="slot" id="slot-995"><span class="card-star" onclick="toggleStar(this, 'slot-995', 'GAME 995')">★</span><div class="box"></div><span>GAME 995</span></div>
+<div class="slot" id="slot-996"><span class="card-star" onclick="toggleStar(this, 'slot-996', 'GAME 996')">★</span><div class="box"></div><span>GAME 996</span></div>
+<div class="slot" id="slot-997"><span class="card-star" onclick="toggleStar(this, 'slot-997', 'GAME 997')">★</span><div class="box"></div><span>GAME 997</span></div>
+<div class="slot" id="slot-998"><span class="card-star" onclick="toggleStar(this, 'slot-998', 'GAME 998')">★</span><div class="box"></div><span>GAME 998</span></div>
+<div class="slot" id="slot-999"><span class="card-star" onclick="toggleStar(this, 'slot-999', 'GAME 999')">★</span><div class="box"></div><span>GAME 999</span></div>
+<div class="slot" id="slot-1000"><span class="card-star" onclick="toggleStar(this, 'slot-1000', 'GAME 1000')">★</span><div class="box"></div><span>GAME 1000</span></div>
+            </div>
+        </div>
+
+        <div class="admin-container" id="adminBox">
+            <div class="admin-overlay">
+                <div id="lockIcon" style="font-size: 80px;">🔒</div>
+            </div>
+            <div class="game-grid admin-content" style="margin:0 auto;">
+                <div class="slot"><div class="box"></div><span>ADMIN_001</span></div>
+                <div class="slot"><div class="box"></div><span>ADMIN_002</span></div>
+                <div class="slot"><div class="box"></div><span>ADMIN_003</span></div>
+            </div>
+        </div>
+
+        <div id="settingsModal" class="admin-container" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; margin: 0; min-height: 200px; padding: 30px; box-shadow: 0 0 50px rgba(0,0,0,0.8);">
+        <h2 style="text-align: center; margin-top: 0; letter-spacing: 2px;">SYSTEM SETTINGS</h2>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(22, 27, 34, 0.8); padding: 15px; border-radius: 8px; border: 1px solid var(--border-muted);">
+            <span style="font-weight: bold; font-size: 14px;">Tab Cloak (Launch about:blank)</span>
+            <button onclick="enableTabCloak()" style="background: var(--bg-dark); color: white; border: 1px solid var(--border-muted); padding: 8px 16px; border-radius: 4px; cursor: pointer; animation: rgbBorder 8s infinite linear;">LAUNCH</button>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(22, 27, 34, 0.8); padding: 15px; border-radius: 8px; border: 1px solid var(--border-muted); margin-top: 15px;">
+            <span style="font-weight: bold; font-size: 14px;">Auto-Cloak on Start</span>
+            <input type="checkbox" id="autoCloakCheck" onchange="toggleAutoCloak()" style="width: 20px; height: 20px; cursor: pointer;">
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button onclick="document.getElementById('settingsModal').style.display='none'" style="background: var(--danger-red); color: white; border: none; padding: 10px 24px; border-radius: 6px; cursor: pointer; font-weight: bold;">CLOSE</button>
+        </div>
+    </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <button onclick="document.getElementById('settingsModal').style.display='none'" style="background: var(--danger-red); color: white; border: none; padding: 10px 24px; border-radius: 6px; cursor: pointer; font-weight: bold;">CLOSE</button>
+        </div>
+    </div>
+
+    <footer>Paid For By The © NULL_X ORGANIZATION</footer>
+
+    <div class="backdoor-box" id="backdoor" onclick="triggerBackdoor(event)"></div>
+
+<script>
+    // --- SETTINGS VARIABLES ---
+    const autoCloakCheck = document.getElementById('autoCloakCheck');
+    let isAutoCloak = localStorage.getItem('nullx_autocloak') === 'true';
+    if(autoCloakCheck) autoCloakCheck.checked = isAutoCloak;
+
+    function toggleAutoCloak() {
+        localStorage.setItem('nullx_autocloak', autoCloakCheck.checked);
+    }
+  const pinInput = document.getElementById('pinCode');
+    const relockBtn = document.getElementById('relock-btn');
+    const favGrid = document.getElementById('favoritesGrid');
+    const mainGrid = document.getElementById('mainGrid');
+    const favLabel = document.getElementById('fav-label');
+    const timerDisplay = document.getElementById('lockTimerDisplay');
+
+    // --- OB
+    // 
+    const REAL_ADMIN_CODE = (0xDE72B).toString(); 
+
+    // --- 
+    const _SYSTEM_AUTH_HASHES = [
+        "102938", "472819", "982123", "556291", "183746", "992012", "384756", "118273", "475839", "019283",
+        "573829", "102934", "847562", "293847", "564738", "192837", "098765", "112233", "445566", "778899",
+        "223344", "556677", "889900", "135792", "246801", "975310", "864209", "123123", "456456", "789789",
+        "147258", "258369", "369147", "159753", "357159", "753951", "951357", "123654", "456987", "789321",
+        "654123", "987456", "321789", "852963", "963852", "741852", "852741", "123987", "987123", "456321",
+        "321456", "789123", "123789", "159264", "264159", "357486", "486357", "951624", "624951", "753842",
+        "842753", "147852", "852147", "258963", "963258", "369741", "741369", "123456", "654321", "111222",
+        "333444", "555666", "777888", "999000", "000111", "222333", "444555", "666777", "888999", "121212",
+        "343434", "565656", "787878", "909090", "090909", "878787", "656565", "434343", "212121", "131313",
+        "242424", "353535", "464646", "575757", "686868", "797979", "808080", "919191", "020202", "151515"
+    ];
+
+    // --- BULLETPROOF TIMER VARIABLES ---
+    let activeTimer = null; 
+    let isLocked = false;
+    const lockTimes = [60, 120, 31535964000000]; // 1 min, 2 min, 999,999 years
+
+    let attempts = parseInt(localStorage.getItem('nullx_attempts')) || 0;
+    let lockoutEnd = parseInt(localStorage.getItem('nullx_lockoutEnd')) || 0;
+
+    // --- HELPER TO FORMAT TIME ---
+    function formatTime(totalSeconds) {
+        if (totalSeconds > 3600) return "LOCKDOWN ACTIVE: PERMANENT";
+        const m = Math.floor(totalSeconds / 60);
+        const s = totalSeconds % 60;
+        return `LOCKDOWN ACTIVE: ${m}m ${s}s`;
+    }
+
+    // --- RUNS THE UI TIMER ---
+    function startUITimer() {
+        clearInterval(activeTimer);
+        timerDisplay.style.display = 'block';
+        pinInput.disabled = true;
+        isLocked = true;
+        
+        activeTimer = setInterval(() => {
+            let now = Date.now();
+            let timeLeft = Math.ceil((lockoutEnd - now) / 1000);
+            
+            if (timeLeft <= 0) {
+                clearInterval(activeTimer);
+                isLocked = false;
+                pinInput.disabled = false;
+                timerDisplay.style.display = 'none';
+                pinInput.placeholder = "••••••";
+            } else {
+                timerDisplay.innerText = formatTime(timeLeft);
+            }
+        }, 1000);
+
+        let timeLeft = Math.ceil((lockoutEnd - Date.now()) / 1000);
+        timerDisplay.innerText = formatTime(timeLeft);
+    }
+
+    // --- CHECK LOCKOUT ON LOAD ---
+    function checkLockoutStatus() {
+        if (lockoutEnd > Date.now()) {
+            startUITimer();
+        }
+    }
+
+    // --- SEARCH LOGIC ---
+    document.getElementById('gameSearch').addEventListener('input', function(e) {
+        const term = e.target.value.toLowerCase();
+        const allSlots = document.querySelectorAll('.slot');
+        allSlots.forEach(slot => {
+            const gameName = slot.querySelector('span:last-child').innerText.toLowerCase();
+            if (gameName.includes(term)) {
+                slot.style.display = 'flex';
+            } else {
+                slot.style.display = 'none';
+            }
+        });
+    });
+
+    // --- FAVORITES LOGIC ---
+    function toggleStar(starEl, slotId, gameName) {
+        const slot = document.getElementById(slotId);
+        starEl.classList.toggle('active');
+        let savedFavs = JSON.parse(localStorage.getItem('nullx_favs')) || [];
+        if (starEl.classList.contains('active')) {
+            favGrid.appendChild(slot);
+            if(!savedFavs.includes(gameName)) savedFavs.push(gameName);
+        } else {
+            mainGrid.appendChild(slot);
+            savedFavs = savedFavs.filter(n => n !== gameName);
+        }
+        localStorage.setItem('nullx_favs', JSON.stringify(savedFavs));
+        updateFavLabel();
+    }
+
+    function updateFavLabel() {
+        favLabel.style.display = favGrid.children.length > 0 ? 'block' : 'none';
+    }
+
+    // --- ADMIN UNLOCK/RELOCK LOGIC ---
+    function unlockSequence() {
+        document.getElementById('lockIcon').innerText = "🔓";
+        setTimeout(() => {
+            document.getElementById('adminBox').classList.add('unlocked');
+            pinInput.style.display = 'none';
+            relockBtn.style.display = 'inline-block';
+        }, 300);
+    }
+
+    function relockAdmin() {
+        document.getElementById('adminBox').classList.remove('unlocked');
+        document.getElementById('lockIcon').innerText = "🔒";
+        pinInput.style.display = 'inline-block';
+        pinInput.value = '';
+        relockBtn.style.display = 'none';
+    }
+
+    // --- PIN INPUT LOGIC ---
+    pinInput.addEventListener('input', (e) => {
+        if (isLocked) {
+            e.target.value = "";
+            return;
+        }
+
+        // Correct Code
+        if (e.target.value === REAL_ADMIN_CODE) {
+            clearInterval(activeTimer);
+            timerDisplay.style.display = 'none';
+            
+            localStorage.removeItem('nullx_attempts');
+            localStorage.removeItem('nullx_lockoutEnd');
+            attempts = 0;
+            lockoutEnd = 0;
+            
+            unlockSequence();
+            e.target.value = "";
+        } 
+        // Wrong Code (finished typing 6 chars)
+        else if (e.target.value.length === 6) {
+            let tierIndex = attempts > 2 ? 2 : attempts;
+            let currentLockTime = lockTimes[tierIndex];
+            
+            attempts++;
+            lockoutEnd = Date.now() + (currentLockTime * 1000);
+            
+            localStorage.setItem('nullx_attempts', attempts);
+            localStorage.setItem('nullx_lockoutEnd', lockoutEnd);
+            
+            e.target.value = "";
+            startUITimer();
+        }
+    });
+
+    // --- BACKDOOR LOGIC ---
+    function triggerBackdoor(e) {
+        if(e.ctrlKey) {
+            let p = prompt('Timer Override:');
+            // 
+            if(p === atob('dW5ibG9ja3RpbWVycGx6')) {
+                clearInterval(activeTimer);
+                isLocked = false;
+                
+                localStorage.removeItem('nullx_attempts');
+                localStorage.removeItem('nullx_lockoutEnd');
+                attempts = 0;
+                lockoutEnd = 0;
+                
+                pinInput.disabled = false;
+                pinInput.value = "";
+                timerDisplay.style.display = 'none';
+                alert("Lockout Timer and Strike Record Reset.");
+            }
+        }
+    }
+    // --- TAB CLOAK LOGIC ---
+    function enableTabCloak() {
+        // Open a new blank tab
+        let win = window.open('about:blank', '_blank');
+        
+        if (win) {
+            // Set a decoy title and favicon for the new tab
+            win.document.title = "Classes"; 
+            
+            // Create an iframe to load your site inside the blank tab
+            let iframe = win.document.createElement('iframe');
+            iframe.src = window.location.href;
+            iframe.style.width = '100vw';
+            iframe.style.height = '100vh';
+            iframe.style.border = 'none';
+            iframe.style.margin = '0';
+            iframe.style.padding = '0';
+            
+            // Remove scrollbars and margins from the new tab
+            win.document.body.style.margin = '0';
+            win.document.body.style.overflow = 'hidden';
+            win.document.body.appendChild(iframe);
+            
+            // Redirect the original tab so it doesn't look suspicious
+            window.location.replace("https://classroom.google.com");
+        } else {
+            alert("Pop-ups must be allowed to enable Tab Cloak.");
+        }
+    }
+
+    // --- ON PAGE LOAD ---
+    window.onload = () => {
+        // 1. AUTO-CLOAK CHECK
+        // If setting is on AND we aren't already hidden inside an iframe
+        if (localStorage.getItem('nullx_autocloak') === 'true' && window === window.top) {
+            enableTabCloak();
+        }
+
+        // 2. CHECK LOCKOUT
+        checkLockoutStatus();
+
+        // 3. LOAD FAVORITES
+        let savedFavs = JSON.parse(localStorage.getItem('nullx_favs')) || [];
+        document.querySelectorAll('.slot').forEach(slot => {
+            const span = slot.querySelector('span:last-child');
+            if(!span) return;
+            const name = span.innerText;
+            if(savedFavs.includes(name)) {
+                const star = slot.querySelector('.card-star');
+                if(star) {
+                    star.classList.add('active');
+                    favGrid.appendChild(slot);
+                }
+            }
+        });
+        updateFavLabel();
+    };
+</script>
+</body>
+</html>
