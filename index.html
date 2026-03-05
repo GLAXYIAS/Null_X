@@ -180,7 +180,14 @@
     </style>
 </head>
 <body>
-
+<div id="cloakIntro" onclick="executeCloakSequence()" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-dark); z-index: 9999; flex-direction: column; justify-content: space-between; align-items: center; padding: 10vh 0; box-sizing: border-box; cursor: pointer;">
+        
+        <img src="https://i.ibb.co/Y7v5KkF3/NX-2.png" alt="Logo" style="height: 120px; width: auto;">
+        
+        <h1 style="font-size: 60px; letter-spacing: 8px; color: white; margin: 0; text-shadow: 0 0 20px rgba(255,255,255,0.3);">Null_X</h1>
+        
+        <p style="color: var(--border-muted); font-size: 22px; font-family: monospace; letter-spacing: 2px;">[ Click anywhere to cloak ]</p>
+    </div>
     <header>
         <img src="https://i.ibb.co/Y7v5KkF3/NX-2.png" alt="Logo" class="logo">
         <div style="display: flex; gap: 15px; align-items: center;">
@@ -1462,18 +1469,24 @@
         }
     }
 
+   // --- EXECUTE CLOAK ON CLICK ---
+    function executeCloakSequence() {
+        document.getElementById('cloakIntro').style.display = 'none';
+        enableTabCloak(); 
+    }
+
     // --- ON PAGE LOAD ---
     window.onload = () => {
-        // 1. AUTO-CLOAK CHECK
-        // If setting is on AND we aren't already hidden inside an iframe
+        const cloakIntro = document.getElementById('cloakIntro');
+        
         if (localStorage.getItem('nullx_autocloak') === 'true' && window === window.top) {
-            enableTabCloak();
+            cloakIntro.style.display = 'flex'; 
+        } else {
+            cloakIntro.style.display = 'none'; 
         }
 
-        // 2. CHECK LOCKOUT
         checkLockoutStatus();
 
-        // 3. LOAD FAVORITES
         let savedFavs = JSON.parse(localStorage.getItem('nullx_favs')) || [];
         document.querySelectorAll('.slot').forEach(slot => {
             const span = slot.querySelector('span:last-child');
